@@ -237,8 +237,60 @@
             </div>
         </div>
 
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay"
+            class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 flex flex-col items-center animate__animated animate__fadeIn">
+                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="mt-4 text-lg font-medium text-gray-700">Đang xử lý...</p>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage"
+            class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden animate__animated">
+            <div class="flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Thao tác thành công!</span>
+            </div>
+        </div>
+
 
         <script>
+
+            // Thêm các hàm quản lý hiệu ứng
+            function showLoading() {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+            }
+
+            function hideLoading() {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }
+
+            function showSuccess(message = 'Thao tác thành công!') {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.querySelector('span').textContent = message;
+                successMsg.classList.remove('hidden');
+                successMsg.classList.add('animate__slideInRight');
+
+                setTimeout(() => {
+                    successMsg.classList.remove('animate__slideInRight');
+                    successMsg.classList.add('animate__slideOutRight');
+
+                    setTimeout(() => {
+                        successMsg.classList.add('hidden');
+                        successMsg.classList.remove('animate__slideOutRight');
+                    }, 500);
+                }, 3000);
+            }
+
+
             // Các hằng số cho AppSheet API
             const appId = 'cb939a9d-a524-4bdf-9035-71ed0ab962d4';
             const accessKey = 'V2-fJCAe-tBC2O-bx4Ky-7ECei-IL1aw-E0j4S-HW352-yq1kE';
@@ -275,17 +327,11 @@
             // Hàm load danh sách NCC
             async function loadNCC() {
                 const modal = document.getElementById('nccModal');
-                modal.style.display = 'flex'; // Hiển thị modal ngay lập tức
+                modal.style.display = 'flex';
+
+                showLoading(); // Hiển thị loading
 
                 const tableBody = document.getElementById('nccTableBody');
-                tableBody.innerHTML = `
-        <tr>
-            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
-                Đang tải dữ liệu...
-            </td>
-        </tr>
-    `;
-
                 try {
                     const response = await apiRequest('DanhMuc_NCC', 'Find', {
                         Selector: {
@@ -293,7 +339,7 @@
                         }
                     });
 
-                    tableBody.innerHTML = ''; // Xóa thông báo "Đang tải..."
+                    tableBody.innerHTML = '';
 
                     if (Array.isArray(response) && response.length > 0) {
                         response.forEach(ncc => {
@@ -312,6 +358,7 @@
                                 tableBody.appendChild(row);
                             }
                         });
+                        showSuccess('Đã tải danh sách nhà cung cấp');
                     } else {
                         tableBody.innerHTML = `
                 <tr>
@@ -330,6 +377,8 @@
                 </td>
             </tr>
         `;
+                } finally {
+                    hideLoading(); // Ẩn loading khi hoàn thành
                 }
             }
 
@@ -337,17 +386,11 @@
             // Hàm load danh sách sản phẩm
             async function loadProducts() {
                 const modal = document.getElementById('productModal');
-                modal.style.display = 'flex'; // Hiển thị modal ngay lập tức
+                modal.style.display = 'flex';
+
+                showLoading(); // Hiển thị loading
 
                 const tableBody = document.getElementById('productTableBody');
-                tableBody.innerHTML = `
-        <tr>
-            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
-                Đang tải dữ liệu...
-            </td>
-        </tr>
-    `;
-
                 try {
                     const response = await apiRequest('DanhMuc_HH', 'Find', {
                         Selector: {
@@ -355,7 +398,7 @@
                         }
                     });
 
-                    tableBody.innerHTML = ''; // Xóa thông báo "Đang tải..."
+                    tableBody.innerHTML = '';
 
                     if (Array.isArray(response) && response.length > 0) {
                         response.forEach(product => {
@@ -375,6 +418,7 @@
                                 tableBody.appendChild(row);
                             }
                         });
+                        showSuccess('Đã tải danh sách sản phẩm');
                     } else {
                         tableBody.innerHTML = `
                 <tr>
@@ -393,6 +437,8 @@
                 </td>
             </tr>
         `;
+                } finally {
+                    hideLoading(); // Ẩn loading khi hoàn thành
                 }
             }
 
@@ -414,7 +460,6 @@
             }
 
             // Hàm lưu dữ liệu vào AppSheet
-            // Hàm lưu dữ liệu vào AppSheet
             async function saveToAppSheet() {
                 try {
                     if (temporaryData.length === 0) {
@@ -422,19 +467,18 @@
                         return;
                     }
 
-                    // Tạo số phiếu theo định dạng PNK24.11001 (có thể điều chỉnh theo logic của bạn)
+                    showLoading(); // Hiển thị loading
+
                     const currentDate = new Date();
                     const year = currentDate.getFullYear().toString().slice(-2);
                     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-                    const sequence = '001'; // Có thể thay đổi thành logic tự động tăng
+                    const sequence = '001';
                     const soPhieu = `PNK${year}.${month}${sequence}`;
 
-                    // Map dữ liệu từ temporaryData sang định dạng API
                     const records = temporaryData.map(item => ({
                         NGAY_THANG: item.ngayThang,
                         TRANG_THAI: "Tạo mới",
                         MA_HANG: item.maHang,
-                        // SO_PHIEU: soPhieu,
                         SO_LUONG: item.soLuong,
                         NSX: item.nsx,
                         HSD: item.hsd,
@@ -444,37 +488,34 @@
                         VI_TRI: item.viTri
                     }));
 
-                    console.log('Dữ liệu gửi:', records);
-
-                    // Gửi từng record một để tránh lỗi
                     for (const record of records) {
                         const response = await apiRequest('NhapKho_CT', 'Add', {
-                            Rows: [record] // Gửi một record tại một thời điểm
+                            Rows: [record]
                         });
                         console.log('Kết quả lưu record:', response);
                     }
 
-                    // Xóa dữ liệu tạm và reset form
+                    // Xóa dữ liệu và reset form
                     temporaryData.length = 0;
                     document.getElementById('tempTableBody').innerHTML = '';
                     document.getElementById('inventoryForm').reset();
 
-                    // Tăng ID
+                    // Cập nhật các giá trị mặc định
                     const currentId = parseInt(document.getElementById('id').value, 10);
                     document.getElementById('id').value = (currentId + 1).toString().padStart(5, '0');
 
-                    // Thiết lập lại giá trị mặc định cho một số trường
                     const today = new Date().toISOString().split('T')[0];
                     document.getElementById('ngayThang').value = today;
 
-                    // Tạo số lot mới
                     const newLotDate = today.replace(/-/g, '').slice(-6);
                     document.getElementById('soLot').value = `Lot${newLotDate}_001`;
 
-                    alert('Đã lưu dữ liệu thành công!');
+                    hideLoading(); // Ẩn loading
+                    showSuccess('Lưu dữ liệu thành công!'); // Hiển thị thông báo thành công
 
                 } catch (error) {
                     console.error('Lỗi khi lưu dữ liệu:', error);
+                    hideLoading(); // Ẩn loading nếu có lỗi
                     alert('Lỗi khi lưu dữ liệu: ' + error.message);
                 }
             }
