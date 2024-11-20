@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Quản Lý Dữ Liệu</title>
+</head>
+
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <div class="bg-white shadow-lg rounded-lg mb-6">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-t-lg">
+                <h1 class="text-2xl font-semibold text-white">Quản Lý Dữ Liệu Sản Phẩm</h1>
+            </div>
+
+            <div id="loadingIndicator" class="flex justify-center items-center p-4 hidden">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white" id="dataTable">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                SO_PHIEU</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                TRANG_THAI</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                TỔNG TIỀN</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                NGAY_THANG</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                SỐ MẶT HÀNG</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                TEN_NCC</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200" id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const appId = 'cb939a9d-a524-4bdf-9035-71ed0ab962d4';
+        const accessKey = 'V2-fJCAe-tBC2O-bx4Ky-7ECei-IL1aw-E0j4S-HW352-yq1kE';
+        const region = 'www';
+        const tableName = 'NhapKho_CT';
+        let originalData = [];
+        let groupedData = new Map();
+
+        function showLoading() {
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').classList.add('hidden');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN').format(amount);
+        }
+
+        function createDetailRow(item) {
+            return `
+                <tr class="detail-row bg-gray-50" data-phieu="${item.SO_PHIEU}" style="display: none;">
+                    <td colspan="6">
+                        <div class="p-4">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <p class="text-sm font-medium">Mã hàng: ${item.MA_HANG || ''}</p>
+                                    <p class="text-sm">Tên hàng: ${item.TEN_HANG || ''}</p>
+                                    <p class="text-sm">Đơn vị: ${item.DVT || ''}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm">Số lượng: ${item.SO_LUONG || ''}</p>
+                                    <p class="text-sm">Số lô: ${item.SO_LOT || ''}</p>
+                                    <p class="text-sm">Vị trí: ${item.VI_TRI || ''}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm">NSX: ${item.NSX || ''}</p>
+                                    <p class="text-sm">HSD: ${item.HSD || ''}</p>
+                                    <p class="text-sm">Thành tiền: ${formatCurrency(item.THANH_TIEN || 0)}</p>
+                                </div>
+                            </div>
+                            ${item.GHI_CHU ? `<p class="text-sm mt-2">Ghi chú: ${item.GHI_CHU}</p>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function createGroupRow(groupData) {
+            const totalAmount = groupData.items.reduce((sum, item) => {
+                const value = parseFloat(item.THANH_TIEN) || 0; // Chuyển thành số, nếu không hợp lệ thì gán 0
+                return sum + value;
+            }, 0);
+
+            return `
+                <tr class="group-row hover:bg-blue-50 cursor-pointer" data-phieu="${groupData.SO_PHIEU}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${groupData.SO_PHIEU}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            ${groupData.TRANG_THAI || ''}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(totalAmount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${groupData.NGAY_THANG || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${groupData.items.length}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${groupData.TEN_NCC || ''}</td>
+                </tr>
+            `;
+        }
+
+        function groupData(data) {
+            const groups = new Map();
+            data.forEach(item => {
+                if (!groups.has(item.SO_PHIEU)) {
+                    groups.set(item.SO_PHIEU, {
+                        SO_PHIEU: item.SO_PHIEU,
+                        TRANG_THAI: item.TRANG_THAI,
+                        NGAY_THANG: item.NGAY_THANG,
+                        TEN_NCC: item.TEN_NCC,
+                        items: []
+                    });
+                }
+                // Đảm bảo THANH_TIEN là số hợp lệ
+                item.THANH_TIEN = parseFloat(item.THANH_TIEN) || 0;
+                groups.get(item.SO_PHIEU).items.push(item);
+            });
+            return groups;
+        }
+
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            groupedData = groupData(data);
+            groupedData.forEach(group => {
+                let html = createGroupRow(group);
+                group.items.forEach(item => {
+                    html += createDetailRow(item);
+                });
+                tableBody.innerHTML += html;
+            });
+
+            // Add click handlers
+            document.querySelectorAll('.group-row').forEach(row => {
+                row.addEventListener('click', function () {
+                    const soPhieu = this.getAttribute('data-phieu');
+                    const detailRows = document.querySelectorAll(`.detail-row[data-phieu="${soPhieu}"]`);
+                    detailRows.forEach(detailRow => {
+                        const isHidden = detailRow.style.display === 'none';
+                        detailRow.style.display = isHidden ? 'table-row' : 'none';
+                    });
+                    this.classList.toggle('bg-blue-100');
+                });
+            });
+        }
+
+        function loadData() {
+            showLoading();
+            const apiUrl = `https://${region}.appsheet.com/api/v2/apps/${appId}/tables/${tableName}/Action`;
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'ApplicationAccessKey': accessKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    Action: 'Find',
+                    Properties: {
+                        Locale: 'vi-VN',
+                        Timezone: 'Asia/Ho_Chi_Minh'
+                    }
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.reverse();
+                        originalData = data;
+                        renderTable(data);
+                        hideLoading();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading data:', error);
+                    hideLoading();
+                    alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.');
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+
+</html>
