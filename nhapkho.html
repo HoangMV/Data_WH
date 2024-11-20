@@ -448,7 +448,9 @@
                         GHI_CHU: item.ghiChu,
                         VI_TRI: item.viTri,
                         DON_GIA: item.donGia,
-                        THANH_TIEN: item.donGia * item.soLuong
+                        THANH_TIEN: item.donGia * item.soLuong,
+                        KHO: "Kho Quất Động", // Thêm kho
+                        NHOM_HANG: item.nhomHang // Thêm nhóm hàng
                     }));
 
                     for (const record of records) {
@@ -620,6 +622,7 @@
                     if (product) {
                         const palletQuantity = parseInt(product['So luong/1 Pallet']) || 0;
                         const donGia = parseFloat(product['Đơn Giá']) || 0;
+                        const nhomHang = product['Nhóm Hàng'] || ''; // Lấy nhóm hàng từ sản phẩm
 
                         const totalEntries = Math.ceil(formData.soLuong / palletQuantity);
                         const remainingQuantity = formData.soLuong % palletQuantity;
@@ -631,7 +634,8 @@
                                 soLuong: currentQuantity,
                                 soLot: `${formData.soLot}_P${i + 1}`,
                                 donGia: donGia,
-                                trangThai: 'Tạo mới' // Thêm trạng thái mặc định cho mỗi entry
+                                trangThai: 'Tạo mới', // Thêm trạng thái mặc định cho mỗi entry
+                                nhomHang: nhomHang // Thêm nhóm hàng vào dữ liệu
                             };
 
                             temporaryData.push(entryData);
