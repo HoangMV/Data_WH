@@ -44,7 +44,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
                     <div class="flex gap-4">
-                        <div class="w-32">
+                        <div class="w-48">
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Số phiếu</label>
                             <input type="text" id="id" name="id"
                                 class="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
@@ -55,7 +55,19 @@
                             <input type="date" id="ngayThang" name="ngayThang"
                                 class="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
                         </div>
+                    </div>
 
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Số HĐ</label>
+                            <input type="text" id="soHD" name="soHD"
+                                class="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Số PO#</label>
+                            <input type="text" id="soPO" name="soPO"
+                                class="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                        </div>
                     </div>
                 </div>
 
@@ -438,6 +450,8 @@
 
                     const records = temporaryData.map(item => ({
                         NGAY_THANG: item.ngayThang,
+                        "Số HĐ": item.soHD,
+                        "Số PO#": item.soPO,
                         TRANG_THAI: item.trangThai, // Sử dụng trạng thái từ dữ liệu
                         SO_PHIEU: document.getElementById('id').value,
                         MA_HANG: item.maHang,
@@ -602,6 +616,8 @@
                 const formData = {
                     id: document.getElementById('id').value,
                     ngayThang: document.getElementById('ngayThang').value,
+                    soHD: document.getElementById('soHD').value,
+                    soPO: document.getElementById('soPO').value,
                     maHang: document.getElementById('maHang').value,
                     tenHang: document.getElementById('tenHang').value,
                     soLuong: parseInt(document.getElementById('soLuong').value),
@@ -817,7 +833,6 @@
                     const month = (now.getMonth() + 1).toString().padStart(2, '0');
                     const day = now.getDate().toString().padStart(2, '0');
 
-                    // Tìm tất cả phiếu trong năm hiện tại
                     const response = await apiRequest('NhapKho_CT', 'Find', {
                         Selector: {
                             Columns: ["SO_PHIEU"],
@@ -826,7 +841,7 @@
                         }
                     });
 
-                    console.log('Phiếu trong năm:', response);
+                    // console.log('Phiếu trong năm:', response);
 
                     let maxSequence = 0;
                     response.forEach(record => {
@@ -839,9 +854,11 @@
                     });
 
                     const nextSequence = maxSequence + 1;
-                    const newId = `PNK${year}${month}${day}_${nextSequence.toString().padStart(3, '0')}`;
+                    const sequenceStr = nextSequence.toString().padStart(3, '0'); // Luôn đảm bảo tối thiểu 3 chữ số
 
-                    console.log('ID mới:', newId);
+                    const newId = `PNK${year}${month}${day}_${sequenceStr}`;
+
+                    // console.log('ID mới:', newId);
                     return newId;
                 } catch (error) {
                     console.error('Lỗi khi tạo ID:', error);
