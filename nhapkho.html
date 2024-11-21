@@ -570,13 +570,14 @@
 
             // Add function to update field values
             function updateField(index, field, value) {
-                if (field === 'soLuong') {
-                    value = parseInt(value);
-                    temporaryData[index][field] = value;
-                    updateTempTable(); // Cập nhật lại bảng để hiển thị thành tiền mới
-                } else {
-                    temporaryData[index][field] = value;
+                temporaryData[index][field] = field === 'soLuong' ? parseInt(value) : value;
+
+                // Auto update status based on location
+                if (field === 'viTri') {
+                    temporaryData[index].trangThai = value.trim() ? 'Hoàn thành' : 'Tạo mới';
                 }
+
+                updateTempTable();
                 showSuccess('Cập nhật thành công!');
             }
 
@@ -627,7 +628,7 @@
                     tenNCC: document.getElementById('tenNCC').value,
                     ghiChu: document.getElementById('ghiChu').value,
                     viTri: document.getElementById('viTri').value,
-                    trangThai: 'Tạo mới' // Thêm trạng thái mặc định
+                    trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới'
                 };
 
                 try {
@@ -657,7 +658,7 @@
                                 soLuong: currentQuantity,
                                 soLot: `${formData.soLot}_P${i + 1}`,
                                 donGia: donGia,
-                                trangThai: 'Tạo mới', // Thêm trạng thái mặc định cho mỗi entry
+                                trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới',
                                 nhomHang: nhomHang // Thêm nhóm hàng vào dữ liệu
                             };
 
