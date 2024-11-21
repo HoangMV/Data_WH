@@ -9,114 +9,93 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <title>Quản Lý Dữ Liệu</title>
     <style>
-        /* Reset và style cơ bản */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Style cho chế độ in */
         @media print {
-
-            /* Ẩn tất cả nội dung không cần in */
-            body * {
-                visibility: hidden;
-            }
-
-            /* Chỉ hiện khu vực cần in */
-            #printArea,
-            #printArea * {
-                visibility: visible;
-            }
-
-            /* Định vị khu vực in */
-            #printArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 0;
+            @page {
                 margin: 0;
+                size: A4 portrait;
             }
 
-            /* Ẩn các phần tử không cần in */
+            body {
+                visibility: visible !important;
+                margin: 0;
+                padding: 0;
+                height: auto;
+            }
+
+            .print-page {
+                page-break-after: always;
+                visibility: visible !important;
+            }
+
+            .print-page:last-child {
+                page-break-after: avoid;
+            }
+
             .no-print {
                 display: none !important;
             }
 
-            /* Thiết lập kích thước trang in */
-            @page {
-                size: A4 portrait;
-                margin: 0;
-            }
-
-            /* Ngăn header và footer tự động của trình duyệt */
-            @page :first {
-                margin-top: 0;
-            }
-
-            @page :left {
-                margin-left: 0;
-            }
-
-            @page :right {
-                margin-right: 0;
+            #printArea {
+                display: block !important;
+                visibility: visible !important;
             }
         }
 
-        /* Style cho khu vực in */
         #printArea {
-            display: none;
             background: white;
+            width: 100%;
+            height: auto;
         }
 
-        /* Style cho từng trang in */
         .print-page {
             width: 210mm;
-            min-height: 297mm;
             padding: 20mm 10mm;
+            /* Thêm padding trên dưới để căn đều */
             margin: 0 auto;
             position: relative;
-            page-break-after: always;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: space-between;
             align-items: center;
             background: white;
+            height: 297mm;
+            /* Chiều cao chuẩn A4 */
+            gap: 27mm;
+            /* Khoảng cách giữa 2 nhãn */
         }
 
-        .print-page:last-child {
-            page-break-after: avoid;
+        .print-page::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            border-top: 2px dashed #000;
+            transform: translateY(-50%);
         }
 
-        /* Style cho nhãn in */
         .print-label {
-            width: 170mm;
-            height: 95mm;
+            width: 190mm;
+            height: 110mm;
             padding: 0;
             border: 1px solid #000;
             background: white;
             page-break-inside: avoid;
             position: relative;
-        }
-
-        /* Khoảng cách giữa 2 nhãn */
-        .first-label {
-            margin-bottom: 20mm;
-            /* Khoảng cách giữa nhãn thứ nhất và nhãn thứ hai */
-        }
-
-        .second-label {
-            margin-bottom: 0;
-            /* Không cần margin dưới cho nhãn cuối */
+            margin: 0;
+            /* Bỏ margin */
         }
 
         .print-label:last-child {
             margin-bottom: 0;
         }
 
-        /* Style cho bảng trong nhãn */
         .print-label table {
             width: 100%;
             height: 100%;
@@ -132,48 +111,34 @@
             vertical-align: middle;
         }
 
-        
-
-
-
-
-        /* Điều chỉnh chiều cao từng dòng */
         .print-label tr:nth-child(1) {
-            /* Dòng barcode */
-            height: 12mm;
+            height: 13mm;
         }
 
         .print-label tr:nth-child(2) {
-            /* Dòng tên */
-            height: 12mm;
+            height: 13mm;
         }
 
         .print-label tr:nth-child(3) {
-            /* Dòng HSD */
-            height: 15mm;
+            height: 16mm;
         }
 
         .print-label tr:nth-child(4) {
-            /* Dòng Số Lot */
-            height: 8mm;
+            height: 10mm;
         }
 
         .print-label tr:nth-child(5) {
-            /* Dòng P Nhập */
-            height: 8mm;
+            height: 10mm;
         }
 
         .print-label tr:nth-child(6) {
-            /* Dòng tiêu đề Số Lượng */
-            height: 8mm;
+            height: 10mm;
         }
 
         .print-label tr:nth-child(7) {
-            /* Dòng số lượng và QR */
             height: 26mm;
         }
 
-        /* Style cho các cell đặc biệt */
         .print-label .header-cell {
             font-weight: bold;
             background-color: #f8f9fa;
@@ -194,7 +159,6 @@
             padding: 5px;
         }
 
-        /* Style cho các canvas (barcode và QR) */
         .barcode {
             width: 100%;
             height: auto;
@@ -205,7 +169,6 @@
             height: 90px;
         }
 
-        /* Style cho bảng dữ liệu chính */
         .selected-row {
             background-color: #e5edff !important;
         }
@@ -215,7 +178,6 @@
             color: white !important;
         }
 
-        /* Style cho group row */
         .group-row {
             transition: background-color 0.2s ease;
         }
@@ -228,7 +190,6 @@
             background-color: #e5edff;
         }
 
-        /* Style cho detail row */
         .detail-row {
             background-color: #f8f9fa;
             transition: all 0.3s ease;
@@ -238,7 +199,6 @@
             background-color: #f0f9ff;
         }
 
-        /* Style cho các nút */
         button {
             transition: all 0.2s ease;
         }
@@ -251,7 +211,6 @@
             transform: translateY(0);
         }
 
-        /* Loading indicator */
         #loadingIndicator {
             position: fixed;
             top: 50%;
@@ -263,7 +222,6 @@
             border-radius: 8px;
         }
 
-        /* Responsive adjustments */
         @media screen and (max-width: 768px) {
             .print-label {
                 width: 100%;
@@ -282,49 +240,51 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Hidden print area -->
-    <div id="printArea" style="display: none;">
-        <!-- Print content will be injected here -->
-    </div>
-
-    <!-- Main Content -->
-    <div class="mx-auto p-6">
-        <div class="bg-white shadow-lg rounded-lg mb-6">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-t-lg">
-                <div class="flex justify-between items-center">
-                    <h1 class="text-2xl font-semibold text-white">Quản Lý Dữ Liệu Sản Phẩm</h1>
-                    <button onclick="printSelectedItems()"
-                        class="px-4 py-2 bg-white text-blue-600 rounded hover:bg-blue-50 font-medium">
-                        In nhãn đã chọn
-                    </button>
+    <div id="mainContent">
+        <div class="mx-auto p-6">
+            <div class="bg-white shadow-lg rounded-lg mb-6">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-t-lg">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-2xl font-semibold text-white">Quản Lý Dữ Liệu Sản Phẩm</h1>
+                        <button onclick="printSelectedItems()"
+                            class="px-4 py-2 bg-white text-blue-600 rounded hover:bg-blue-50 font-medium">
+                            In nhãn đã chọn
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div id="loadingIndicator" class="flex justify-center items-center p-4 hidden">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            </div>
+                <div id="loadingIndicator" class="flex justify-center items-center p-4 hidden">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white" id="dataTable">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                SO_PHIEU</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                TRANG_THAI</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                TỔNG TIỀN</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                NGAY_THANG</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                SỐ MẶT HÀNG</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                TEN_NCC</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200" id="tableBody">
-                    </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white" id="dataTable">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    SO_PHIEU</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    TRANG_THAI</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    TỔNG TIỀN</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    NGAY_THANG</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    SỐ MẶT HÀNG</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    TEN_NCC</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200" id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -359,22 +319,14 @@
             });
         }
 
-        function createPrintPages(items) {
-            let pagesHtml = '';
-            const labelsPerPage = 2; // Giảm xuống còn 2 nhãn mỗi trang
-
-            for (let i = 0; i < items.length; i += labelsPerPage) {
-                const pageItems = items.slice(i, i + labelsPerPage);
-                let pageHtml = '<div class="print-page">';
-
-                pageItems.forEach((item, index) => {
-                    pageHtml += `
-                <div class="print-label ${index === 0 ? 'first-label' : 'second-label'}">
+        function createPrintLabel(item, index) {
+            return `
+                <div class="print-label ${index === 0 ? 'first-label' : ''}">
                     <table>
                         <tr>
                             <td colspan="4"></td>
                             <td style="width: 120px; vertical-align: middle">
-                                <canvas id="barcode-${i + index}" class="barcode"></canvas>
+                                <canvas id="barcode-${index}" class="barcode"></canvas>
                             </td>
                         </tr>
                         <tr>
@@ -390,14 +342,14 @@
                             <td>${item.SO_LOT || ''}</td>
                             <td>Ngày: </td>
                             <td style="border-left: 2px solid black">${formatDate(item.NGAY_THANG)}</td>
-                            <td></td>
+                            <td style="text-align: center;">Qr</td>
                         </tr>
                         <tr>
                             <td class="header-cell">P Nhập:</td>
                             <td></td>
                             <td style="border-left: 2px solid black">Số Thùng:</td>
                             <td></td>
-                            <td style="text-align: center;">Qr</td>
+                            <td style="border:none; border-right: 2px solid black"></td>
                         </tr>
                         <tr>
                             <td colspan="3" style="border-bottom: 2px solid black">Số Lượng</td>
@@ -408,34 +360,44 @@
                             <td colspan="3" class="quantity" style="font-size: 48px; height: 100%; border-right: none">${item.SO_LUONG || ''}</td>
                             <td style="border-left: 2px solid black">${item.VI_TRI || ''}</td>
                             <td class="qr-code-cell" style="border-right: 2px solid black; border-bottom: 2px solid black; position: relative;">
-                                <canvas id="qrcode-${i + index}" class="qrcode"></canvas>
+                                <canvas id="qrcode-${index}" class="qrcode"></canvas>
                             </td>
                         </tr>
                     </table>
                 </div>
             `;
-                });
-
-                pageHtml += '</div>';
-                pagesHtml += pageHtml;
-            }
-
-            return pagesHtml;
         }
 
-        function generateAllBarcodesAndQRs(items) {
-            return new Promise((resolve) => {
-                items.forEach((item, index) => {
-                    // Generate barcode
-                    JsBarcode(`#barcode-${index}`, item.MA_HANG || "NO_CODE", {
+        function createPrintPages(items) {
+            let html = '';
+            const itemsPerPage = 2;
+
+            for (let i = 0; i < items.length; i += itemsPerPage) {
+                html += '<div class="print-page">';
+                for (let j = 0; j < itemsPerPage && i + j < items.length; j++) {
+                    html += createPrintLabel(items[i + j], i + j);
+                }
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        async function generateAllBarcodesAndQRs(items) {
+            items.forEach((item, index) => {
+                const barcodeElement = document.getElementById(`barcode-${index}`);
+                if (barcodeElement) {
+                    JsBarcode(barcodeElement, item.MA_HANG || "NO_CODE", {
                         width: 0.6,
                         height: 30,
                         fontSize: 0,
                         margin: 0,
                         displayValue: false
                     });
+                }
 
-                    // Generate QR code
+                const qrElement = document.getElementById(`qrcode-${index}`);
+                if (qrElement) {
                     const qrData = JSON.stringify({
                         ma: item.MA_HANG,
                         ns: item.NGAY_THANG,
@@ -443,32 +405,68 @@
                         vt: item.VI_TRI
                     });
 
-                    QRCode.toCanvas(document.getElementById(`qrcode-${index}`), qrData, {
+                    QRCode.toCanvas(qrElement, qrData, {
                         width: 90,
                         height: 90,
                         margin: 0
                     });
-                });
-                // Short delay to ensure all codes are rendered
-                setTimeout(resolve, 200);
+                }
             });
+
+            return new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        async function performPrint(items) {
+            const originalContent = document.body.innerHTML;
+
+            try {
+                // Create a temporary container
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = createPrintPages(items);
+                document.body.innerHTML = tempContainer.innerHTML;
+
+                await generateAllBarcodesAndQRs(items);
+
+                window.print();
+
+                document.body.innerHTML = originalContent;
+                initializeEventListeners();
+
+            } catch (error) {
+                console.error('Error printing:', error);
+                document.body.innerHTML = originalContent;
+                initializeEventListeners();
+                alert('Có lỗi xảy ra khi in');
+            }
         }
 
         async function openPrintModal(item) {
-            const printArea = document.getElementById('printArea');
-            printArea.style.display = 'block';
-            printArea.innerHTML = createPrintPages([item]);
+            await performPrint([item]);
+        }
 
-            try {
-                await generateAllBarcodesAndQRs([item]);
-                setTimeout(() => {
-                    window.print();
-                    printArea.style.display = 'none';
-                }, 100);
-            } catch (error) {
-                console.error('Error generating codes:', error);
-                alert('Có lỗi xảy ra khi tạo mã barcode hoặc QR code');
-                printArea.style.display = 'none';
+        async function printSelectedItems() {
+            const selectedRows = document.querySelectorAll('.detail-row.selected-row');
+            if (selectedRows.length === 0) {
+                alert('Vui lòng chọn ít nhất một mặt hàng để in');
+                return;
+            }
+
+            const selectedItems = [];
+            selectedRows.forEach(row => {
+                const itemData = row.getAttribute('data-selected-item');
+                if (itemData) {
+                    try {
+                        selectedItems.push(JSON.parse(itemData));
+                    } catch (e) {
+                        console.error('Error parsing item data:', e);
+                    }
+                }
+            });
+
+            if (selectedItems.length > 0) {
+                await performPrint(selectedItems);
+            } else {
+                alert('Không thể tìm thấy thông tin của các mặt hàng đã chọn');
             }
         }
 
@@ -486,93 +484,48 @@
             }
         }
 
-        async function printSelectedItems() {
-            const selectedRows = document.querySelectorAll('.detail-row.selected-row');
-            if (selectedRows.length === 0) {
-                alert('Vui lòng chọn ít nhất một mặt hàng để in');
-                return;
-            }
-
-            const selectedItems = [];
-            selectedRows.forEach(row => {
-                const itemData = row.getAttribute('data-selected-item');
-                if (itemData) {
-                    try {
-                        const item = JSON.parse(itemData);
-                        selectedItems.push(item);
-                    } catch (e) {
-                        console.error('Error parsing item data:', e);
-                    }
-                }
-            });
-
-            if (selectedItems.length > 0) {
-                const printArea = document.getElementById('printArea');
-                // Make printArea visible while generating
-                printArea.style.display = 'block';
-                printArea.innerHTML = createPrintPages(selectedItems);
-
-                try {
-                    // Wait for barcodes and QR codes to generate
-                    await generateAllBarcodesAndQRs(selectedItems);
-                    // Short delay to ensure everything is rendered
-                    setTimeout(() => {
-                        window.print();
-                        // Hide printArea after printing
-                        printArea.style.display = 'none';
-                    }, 100);
-                } catch (error) {
-                    console.error('Error generating codes:', error);
-                    alert('Có lỗi xảy ra khi tạo mã barcode hoặc QR code');
-                    printArea.style.display = 'none';
-                }
-            } else {
-                alert('Không thể tìm thấy thông tin của các mặt hàng đã chọn');
-            }
-        }
-
         function createDetailRow(item) {
             return `
-        <tr class="detail-row bg-gray-50" data-phieu="${item.SO_PHIEU}" style="display: none;">
-            <td colspan="6">
-                <div class="p-4">
-                    <div class="grid grid-cols-5 gap-4">
-                        <div>
-                            <p class="text-sm font-medium">Mã hàng: ${item.MA_HANG || ''}</p>
-                            <p class="text-sm">Tên hàng: ${item.TEN_HANG || ''}</p>
+                <tr class="detail-row bg-gray-50" data-phieu="${item.SO_PHIEU}" style="display: none;">
+                    <td colspan="6">
+                        <div class="p-4">
+                            <div class="grid grid-cols-5 gap-4">
+                                <div>
+                                    <p class="text-sm font-medium">Mã hàng: ${item.MA_HANG || ''}</p>
+                                    <p class="text-sm">Tên hàng: ${item.TEN_HANG || ''}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm">Số lượng: ${item.SO_LUONG || ''}</p>
+                                    <p class="text-sm">Số lô: ${item.SO_LOT || ''}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm">Đơn vị: ${item.DVT || ''}</p>
+                                    <p class="text-sm">Vị trí: ${item.VI_TRI || ''}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm">NSX: ${item.NSX || ''}</p>
+                                    <p class="text-sm">HSD: ${item.HSD || ''}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm">Thành tiền: ${formatCurrency(item.THANH_TIEN || 0)}</p>
+                                    <p class="text-sm mt-2">Ghi chú: ${item.GHI_CHU || ''}</p>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button onclick="toggleRowSelection(this)" 
+                                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm mr-2"
+                                        data-item='${JSON.stringify(item)}'>
+                                    Chọn để in
+                                </button>
+                                <button onclick='openPrintModal(${JSON.stringify(item).replace(/'/g, "\\'")})' 
+                                        class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                                    In Nhãn đơn
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm">Số lượng: ${item.SO_LUONG || ''}</p>
-                            <p class="text-sm">Số lô: ${item.SO_LOT || ''}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm">Đơn vị: ${item.DVT || ''}</p>
-                            <p class="text-sm">Vị trí: ${item.VI_TRI || ''}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm">NSX: ${item.NSX || ''}</p>
-                            <p class="text-sm">HSD: ${item.HSD || ''}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm">Thành tiền: ${formatCurrency(item.THANH_TIEN || 0)}</p>
-                            <p class="text-sm mt-2">Ghi chú: ${item.GHI_CHU || ''}</p>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <button onclick="toggleRowSelection(this)" 
-                                class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm mr-2"
-                                data-item='${JSON.stringify(item)}'>
-                            Chọn để in
-                        </button>
-                        <button onclick='openPrintModal(${JSON.stringify(item).replace(/'/g, "\\'")})' 
-                                class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-                            In Nhãn đơn
-                        </button>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    `;
+                    </td>
+                </tr>
+            `;
         }
 
         function createGroupRow(groupData) {
@@ -628,13 +581,16 @@
                 tableBody.innerHTML += html;
             });
 
+            initializeEventListeners();
+        }
+
+        function initializeEventListeners() {
             document.querySelectorAll('.group-row').forEach(row => {
                 row.addEventListener('click', function () {
                     const soPhieu = this.getAttribute('data-phieu');
                     const detailRows = document.querySelectorAll(`.detail-row[data-phieu="${soPhieu}"]`);
                     detailRows.forEach(detailRow => {
-                        const isHidden = detailRow.style.display === 'none';
-                        detailRow.style.display = isHidden ? 'table-row' : 'none';
+                        detailRow.style.display = detailRow.style.display === 'none' ? 'table-row' : 'none';
                     });
                     this.classList.toggle('bg-blue-100');
                 });
@@ -675,17 +631,9 @@
                 });
         }
 
-        // Initialize data load when DOM is ready
+        // Initialize
         document.addEventListener('DOMContentLoaded', loadData);
 
-        // Add print event listeners
-        window.addEventListener('beforeprint', function () {
-            document.body.classList.add('printing');
-        });
-
-        window.addEventListener('afterprint', function () {
-            document.body.classList.remove('printing');
-        });
     </script>
 </body>
 
