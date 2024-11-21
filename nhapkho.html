@@ -439,6 +439,7 @@
                     const records = temporaryData.map(item => ({
                         NGAY_THANG: item.ngayThang,
                         TRANG_THAI: item.trangThai, // Sử dụng trạng thái từ dữ liệu
+                        SO_PHIEU: document.getElementById('id').value,
                         MA_HANG: item.maHang,
                         SO_LUONG: item.soLuong,
                         NSX: item.nsx,
@@ -475,6 +476,12 @@
 
                     hideLoading();
                     showSuccess('Lưu dữ liệu thành công!');
+
+                    // Sau khi lưu thành công, cập nhật ID mới
+                    const newId = await generateNextId();
+                    if (newId) {
+                        document.getElementById('id').value = newId;
+                    }
 
                 } catch (error) {
                     console.error('Lỗi khi lưu dữ liệu:', error);
@@ -802,12 +809,69 @@
                 }
             });
 
+            // Hàm tạo ID tiếp theo
+            async function generateNextId() {
+                try {
+                    const now = new Date();
+                    const year = now.getFullYear().toString().slice(-2);
+                    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    const day = now.getDate().toString().padStart(2, '0');
+
+                    // Tìm tất cả phiếu trong năm hiện tại
+                    const response = await apiRequest('NhapKho_CT', 'Find', {
+                        Selector: {
+                            Columns: ["SO_PHIEU"],
+                            Filter: `[SO_PHIEU] LIKE 'PNK${year}%'`,
+                            OrderBy: "SO_PHIEU DESC"
+                        }
+                    });
+
+                    console.log('Phiếu trong năm:', response);
+
+                    let maxSequence = 0;
+                    response.forEach(record => {
+                        if (record.SO_PHIEU) {
+                            const sequence = parseInt(record.SO_PHIEU.split('_').pop(), 10);
+                            if (!isNaN(sequence) && sequence > maxSequence) {
+                                maxSequence = sequence;
+                            }
+                        }
+                    });
+
+                    const nextSequence = maxSequence + 1;
+                    const newId = `PNK${year}${month}${day}_${nextSequence.toString().padStart(3, '0')}`;
+
+                    console.log('ID mới:', newId);
+                    return newId;
+                } catch (error) {
+                    console.error('Lỗi khi tạo ID:', error);
+                    return null;
+                }
+            }
+
             // Thiết lập giá trị mặc định cho trường Ngày Tháng
-            document.addEventListener('DOMContentLoaded', function () {
-                const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại theo định dạng yyyy-mm-dd
+            document.addEventListener('DOMContentLoaded', async function () {
+                // Đặt ngày hiện tại cho trường ngày tháng
+                const today = new Date().toISOString().split('T')[0];
                 const ngayThangInput = document.getElementById('ngayThang');
                 if (ngayThangInput) {
-                    ngayThangInput.value = today; // Gán giá trị mặc định
+                    ngayThangInput.value = today;
+                }
+
+                // Tạo và gán ID mới
+                const newId = await generateNextId();
+                if (newId) {
+                    document.getElementById('id').value = newId;
+                }
+
+                // Khóa trường ID không cho sửa
+                document.getElementById('id').readOnly = true;
+                document.getElementById('id').classList.add('bg-gray-50');
+
+                // Ẩn modal sản phẩm nếu có
+                const productModal = document.getElementById('productModal');
+                if (productModal) {
+                    productModal.style.display = 'none';
                 }
             });
 
