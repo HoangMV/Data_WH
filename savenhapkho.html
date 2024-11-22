@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Nhập Kho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+</head>
+<style>
+    .ui-autocomplete {
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .ui-menu-item {
+        padding: 8px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .ui-menu-item:hover {
+        background: #f0f0f0;
+    }
+
+    .overflow-x-auto {
+        position: relative;
+        margin: 0 auto;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-fixed {
+        table-layout: fixed;
+    }
+
+    /* Đảm bảo nội dung trong ô không bị wrap */
+    td,
+    th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Style cho input trong bảng */
+    td input,
+    td select {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    /* Đảm bảo dropdown không bị cắt */
+    td select {
+        padding-right: 20px;
+    }
+
+    /* Remove spinner buttons for Chrome, Safari, Edge, Opera */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+    <div class="max-w-8xl mx-auto">
+        <form id="inventoryForm" class="bg-white rounded-lg shadow-md p-4 mb-4 animate__animated animate__fadeIn">
+            <div class="flex justify-between items-center mb-3">
+                <h1 class="text-xl font-bold text-gray-800">Phiếu Nhập Kho</h1>
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded font-medium text-sm">✓
+                        Lưu</button>
+                    <button type="button" onclick="resetForm()"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1.5 rounded font-medium text-sm">↺
+                        Làm mới</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-3">
+                <!-- Left Column -->
+                <div class="col-span-8 grid gap-3">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Số phiếu</label>
+                            <input type="text" id="id" class="w-full border rounded p-1.5 text-sm" value="PNK000">
+                        </div>
+
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Mã NCC</label>
+                            <input type="text" id="maNCC" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Tên NCC</label>
+                            <input type="text" id="tenNCC" class="w-full border rounded p-1.5 text-sm bg-gray-50"
+                                readonly>
+                        </div>
+                    </div>
+
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Ngày Tháng</label>
+                            <input type="date" id="ngayThang" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Mã Hàng</label>
+                            <input type="text" id="maHang" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Tên Hàng</label>
+                            <input type="text" id="tenHang" class="w-full border rounded p-1.5 text-sm bg-gray-50"
+                                readonly>
+                        </div>
+
+                    </div>
+
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Số Lot</label>
+                            <input type="text" id="soLot" class="w-full border rounded p-1.5 text-sm" value="Lot000">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Số HĐ</label>
+                            <input type="text" id="soHD" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Số PO#</label>
+                            <input type="text" id="soPO" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-span-4 grid gap-3">
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">NSX</label>
+                            <input type="date" id="nsx" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">HSD</label>
+                            <input type="date" id="hsd" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Số Lượng</label>
+                            <input type="number" id="soLuong" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Vị Trí</label>
+                            <input type="text" id="viTri" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Ghi Chú</label>
+                            <input type="text" id="ghiChu" class="w-full border rounded p-1.5 text-sm">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <br>
+
+    <div class="max-w-8xl mx-auto space-y-6">
+        <!-- Temporary Table Card -->
+        <div class="bg-white rounded-xl shadow-lg p-4 animate__animated animate__fadeIn">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Bảng Tạm</h2>
+                <button onclick="saveToAppSheet()"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg">
+                    Lưu vào AppSheet
+                </button>
+            </div>
+            <div class="overflow-x-auto" style="min-width: 100%;">
+                <table class="w-full table-fixed border-collapse whitespace-nowrap">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 100px; width: 100px;">
+                                ID
+                            </th> -->
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                Trạng Thái
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 180px; width: 180px;">
+                                Mã Hàng
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 300px; max-width: 500px;">
+                                Tên Hàng
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 90px; width: 90px;">
+                                Số Lượng
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 100px; width: 100px;">
+                                Vị Trí
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                NSX
+                            </th>
+                            <th class="px-2 py-3 tetext-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                HSD
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 150px; width: 150px;">
+                                Số Lot
+                            </th>
+                            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 200px; width: 200px;">
+                                Tên NCC
+                            </th> -->
+
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 150px; width: 150px;">
+                                Ghi Chú
+                            </th>
+                            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                Đơn Giá
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                Thành Tiền
+                            </th> -->
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 60px; width: 60px;">
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tempTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal"
+            class="fixed inset-0 bg-gray-600/50 backdrop-blur-sm hidden flex items-center justify-center z-50">
+            <div
+                class="bg-white rounded-xl shadow-2xl p-8 w-[600px] max-w-[90%] transform transition-all animate__animated animate__fadeInUp">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Chỉnh Sửa Dòng</h3>
+                    <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="editForm" class="space-y-6">
+                    <input type="hidden" id="editIndex">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Số Lượng -->
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Số Lượng</label>
+                            <input type="number" id="editSoLuong"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"
+                                style="box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        </div>
+
+                        <!-- NSX & HSD -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">NSX</label>
+                            <input type="date" id="editNSX"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">HSD</label>
+                            <input type="date" id="editHSD"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all">
+                        </div>
+
+                        <!-- Số Lot -->
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Số Lot</label>
+                            <input type="text" id="editSoLot"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all">
+                        </div>
+
+                        <!-- Ghi Chú -->
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Ghi Chú</label>
+                            <input type="text" id="editGhiChu"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all">
+                        </div>
+
+                        <!-- Vị Trí -->
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Vị Trí</label>
+                            <input type="text" id="editViTri"
+                                class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end gap-4 pt-6">
+                        <button type="button" onclick="closeEditModal()"
+                            class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors">
+                            Hủy
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl">
+                            Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay"
+            class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 flex flex-col items-center animate__animated animate__fadeIn">
+                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="mt-4 text-lg font-medium text-gray-700">Đang xử lý...</p>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage"
+            class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden animate__animated">
+            <div class="flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Thao tác thành công!</span>
+            </div>
+        </div>
+
+        <script>
+
+            // document.addEventListener('contextmenu', function (e) {
+            //     e.preventDefault();
+            // }, false);
+
+            // // Disable shortcuts
+            // document.onkeydown = function (e) {
+            //     // Disable F12
+            //     if (e.keyCode == 123) {
+            //         return false;
+            //     }
+            //     // Disable Ctrl+Shift+I
+            //     if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+            //         return false;
+            //     }
+            //     // Disable Ctrl+Shift+J
+            //     if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+            //         return false;
+            //     }
+            //     // Disable Ctrl+U
+            //     if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+            //         return false;
+            //     }
+            // };
+
+
+            // Thêm các hàm quản lý hiệu ứng
+            function showLoading() {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+            }
+
+            function hideLoading() {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }
+
+            function showSuccess(message = 'Thao tác thành công!') {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.querySelector('span').textContent = message;
+                successMsg.classList.remove('hidden');
+                successMsg.classList.add('animate__slideInRight');
+
+                setTimeout(() => {
+                    successMsg.classList.remove('animate__slideInRight');
+                    successMsg.classList.add('animate__slideOutRight');
+
+                    setTimeout(() => {
+                        successMsg.classList.add('hidden');
+                        successMsg.classList.remove('animate__slideOutRight');
+                    }, 500);
+                }, 3000);
+            }
+
+            // Các hằng số cho AppSheet API
+            const appId = 'cb939a9d-a524-4bdf-9035-71ed0ab962d4';
+            const accessKey = 'V2-fJCAe-tBC2O-bx4Ky-7ECei-IL1aw-E0j4S-HW352-yq1kE';
+            const region = 'www';
+
+            // Hàm gọi API AppSheet
+            function apiRequest(tableName, action, data) {
+                const apiUrl = `https://${region}.appsheet.com/api/v2/apps/${appId}/tables/${tableName}/Action`;
+                return $.ajax({
+                    url: apiUrl,
+                    method: 'POST',
+                    headers: {
+                        'ApplicationAccessKey': accessKey,
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify({
+                        Action: action,
+                        Properties: {
+                            Locale: 'vi-VN',
+                            Timezone: 'Asia/Ho_Chi_Minh'
+                        },
+                        ...data
+                    })
+                }).then(response => {
+                    return response;
+                }).catch(error => {
+                    throw error;
+                });
+            }
+
+            // Mảng lưu trữ dữ liệu tạm thời
+            const temporaryData = [];
+
+            // Hàm lưu dữ liệu vào AppSheet
+            async function saveToAppSheet() {
+                try {
+                    if (temporaryData.length === 0) {
+                        alert('Chưa có dữ liệu để lưu!');
+                        return;
+                    }
+                    showLoading();
+
+                    const records = temporaryData.map(item => ({
+                        NGAY_THANG: item.ngayThang,
+                        "Số HĐ": item.soHD,
+                        "Số PO#": item.soPO,
+                        TRANG_THAI: item.trangThai, // Sử dụng trạng thái từ dữ liệu
+                        SO_PHIEU: document.getElementById('id').value,
+                        MA_HANG: item.maHang,
+                        SO_LUONG: item.soLuong,
+                        NSX: item.nsx,
+                        HSD: item.hsd,
+                        SO_LOT: item.soLot,
+                        TEN_NCC: item.tenNCC,
+                        GHI_CHU: item.ghiChu,
+                        VI_TRI: item.viTri,
+                        DON_GIA: item.donGia,
+                        THANH_TIEN: item.donGia * item.soLuong,
+                        KHO: "Kho Quất Động", // Thêm kho
+                        NHOM_HANG: item.nhomHang // Thêm nhóm hàng
+                    }));
+
+                    for (const record of records) {
+                        const response = await apiRequest('NhapKho_CT', 'Add', {
+                            Rows: [record]
+                        });
+                        console.log('Kết quả lưu record:', response);
+                    }
+
+                    temporaryData.length = 0;
+                    document.getElementById('tempTableBody').innerHTML = '';
+                    document.getElementById('inventoryForm').reset();
+
+                    const currentId = parseInt(document.getElementById('id').value, 10);
+                    document.getElementById('id').value = (currentId + 1).toString().padStart(5, '0');
+
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('ngayThang').value = today;
+
+                    const newLotDate = today.replace(/-/g, '').slice(-6);
+                    document.getElementById('soLot').value = `Lot${newLotDate}_001`;
+
+                    hideLoading();
+                    showSuccess('Lưu dữ liệu thành công!');
+
+                    // Sau khi lưu thành công, cập nhật ID mới
+                    const newId = await generateNextId();
+                    if (newId) {
+                        document.getElementById('id').value = newId;
+                    }
+
+                } catch (error) {
+                    console.error('Lỗi khi lưu dữ liệu:', error);
+                    hideLoading();
+                    alert('Lỗi khi lưu dữ liệu: ' + error.message);
+                }
+            }
+
+            // Hàm cập nhật hiển thị bảng tạm
+            function updateTempTable() {
+                const tableBody = document.getElementById('tempTableBody');
+                tableBody.innerHTML = '';
+
+                temporaryData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    const thanhTien = item.donGia * item.soLuong;
+
+                    row.innerHTML = `
+             <td class="px-2 py-4">
+                <select class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'trangThai', this.value)">
+                    <option value="Tạo mới" ${item.trangThai === 'Tạo mới' ? 'selected' : ''}>Tạo mới</option>
+                    <option value="Hoàn thành" ${item.trangThai === 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
+                </select>
+            </td>
+            <td class="px-2 py-4 text-center">${item.maHang}</td>
+            <td class="px-2 py-4 text-center">${item.tenHang}</td>
+            <td class="px-2 py-4 text-center">
+                <input type="number" value="${item.soLuong}" 
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500 font-bold text-blue-600"
+                    onchange="updateField(${index}, 'soLuong', this.value)">
+            </td>
+            <td class="px-2 py-4 text-center">
+                <input type="text" value="${item.viTri}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'viTri', this.value)">
+            </td>
+            <td class="px-2 py-4 text-center">
+                <input type="date" value="${item.nsx}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'nsx', this.value)">
+            </td>
+            <td class="px-2 py-4 text-center">
+                <input type="date" value="${item.hsd}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'hsd', this.value)">
+            </td>
+            <td class="px-2 py-4 text-center">
+                <input type="text" value="${item.soLot}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'soLot', this.value)">
+            </td>
+            
+            <td class="px-2 py-4 text-center">
+                <input type="text" value="${item.ghiChu}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'ghiChu', this.value)">
+            </td>
+           
+            <td class="px-2 py-4 text-center">
+                <button onclick="deleteRow(${index})" 
+                        class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+                    ✕
+                </button>
+            </td>
+        `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // Add function to update field values
+            function updateField(index, field, value) {
+                temporaryData[index][field] = field === 'soLuong' ? parseInt(value) : value;
+
+                // Auto update status based on location
+                if (field === 'viTri') {
+                    temporaryData[index].trangThai = value.trim() ? 'Hoàn thành' : 'Tạo mới';
+                }
+
+                updateTempTable();
+                showSuccess('Cập nhật thành công!');
+            }
+
+            // Hàm xóa dòng
+            function deleteRow(index) {
+                if (confirm('Bạn có chắc chắn muốn xóa dòng này?')) {
+                    temporaryData.splice(index, 1);
+                    updateTempTable();
+                }
+            }
+
+            // Xử lý form chỉnh sửa
+            document.getElementById('editForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const index = document.getElementById('editIndex').value;
+
+                // Cập nhật dữ liệu
+                temporaryData[index] = {
+                    ...temporaryData[index],
+                    soLuong: parseInt(document.getElementById('editSoLuong').value),
+                    nsx: document.getElementById('editNSX').value,
+                    hsd: document.getElementById('editHSD').value,
+                    soLot: document.getElementById('editSoLot').value,
+                    ghiChu: document.getElementById('editGhiChu').value,
+                    viTri: document.getElementById('editViTri').value
+                };
+
+                // Cập nhật bảng và đóng modal
+                updateTempTable();
+                closeEditModal();
+            });
+
+            // Xử lý sự kiện submit form
+            document.getElementById('inventoryForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                // Validation
+                const maHang = document.getElementById('maHang').value;
+                const soLuong = document.getElementById('soLuong').value;
+                const tenHang = document.getElementById('tenHang').value;
+
+                if (!maHang.trim()) {
+                    alert('Vui lòng nhập mã hàng');
+                    document.getElementById('maHang').focus();
+                    return;
+                }
+
+                if (!tenHang.trim()) {
+                    alert('Mã hàng không tồn tại trong hệ thống');
+                    document.getElementById('maHang').focus();
+                    return;
+                }
+
+                if (!soLuong || soLuong <= 0) {
+                    alert('Vui lòng nhập số lượng hợp lệ');
+                    document.getElementById('soLuong').focus();
+                    return;
+                }
+
+                try {
+                    const response = await apiRequest('DanhMuc_HH', 'Find', {
+                        Selector: {
+                            Columns: ["MA_HANG", "TEN_HANG", "So luong/1 Pallet", "Đơn Giá", "Nhóm Hàng"]
+                        }
+                    });
+
+                    if (!Array.isArray(response) || response.length === 0) {
+                        throw new Error('Không tìm thấy danh sách sản phẩm');
+                    }
+
+                    const product = response.find(item => item.MA_HANG === maHang);
+                    if (product) {
+                        const palletQuantity = parseInt(product['So luong/1 Pallet']);
+
+                        // Check for invalid pallet quantity
+                        if (!palletQuantity || palletQuantity <= 0) {
+                            alert(`Mã hàng ${maHang} chưa có thông tin Số lượng/1 Pallet. Vui lòng cập nhật thông tin trước khi nhập kho.`);
+                            return;
+                        }
+
+                        const formData = {
+                            id: document.getElementById('id').value,
+                            ngayThang: document.getElementById('ngayThang').value,
+                            soHD: document.getElementById('soHD').value,
+                            soPO: document.getElementById('soPO').value,
+                            maHang: maHang,
+                            tenHang: tenHang,
+                            soLuong: parseInt(soLuong),
+                            nsx: document.getElementById('nsx').value,
+                            hsd: document.getElementById('hsd').value,
+                            soLot: document.getElementById('soLot').value,
+                            tenNCC: document.getElementById('tenNCC').value,
+                            ghiChu: document.getElementById('ghiChu').value,
+                            viTri: document.getElementById('viTri').value,
+                            trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới'
+                        };
+
+                        const donGia = parseFloat(product['Đơn Giá']) || 0;
+                        const nhomHang = product['Nhóm Hàng'] || '';
+
+                        // Split into multiple entries based on pallet quantity
+                        const totalEntries = Math.ceil(formData.soLuong / palletQuantity);
+                        const remainingQuantity = formData.soLuong % palletQuantity;
+
+                        for (let i = 0; i < totalEntries; i++) {
+                            const currentQuantity = i === totalEntries - 1 && remainingQuantity ? remainingQuantity : palletQuantity;
+                            const entryData = {
+                                ...formData,
+                                soLuong: currentQuantity,
+                                soLot: `${formData.soLot}_P${i + 1}`,
+                                donGia: donGia,
+                                nhomHang: nhomHang
+                            };
+                            temporaryData.push(entryData);
+                        }
+
+                        updateTempTable();
+                        showSuccess('Thêm sản phẩm thành công!');
+
+                        // Reset form fields
+                        document.getElementById('maHang').value = '';
+                        document.getElementById('tenHang').value = '';
+                        // document.getElementById('soLuong').value = '';
+                        // document.getElementById('viTri').value = '';
+                        // document.getElementById('ghiChu').value = '';
+                        // document.getElementById('maNCC').value = '';
+                        // document.getElementById('tenNCC').value = '';
+                        // document.getElementById('soHD').value = '';
+                        // document.getElementById('soPO').value = '';
+                        // document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
+                        document.getElementById('hsd').value = '';
+                        document.getElementById('nsx').value = '';
+
+                    } else {
+                        throw new Error('Không tìm thấy sản phẩm với mã hàng này');
+                    }
+                } catch (error) {
+                    console.error('Lỗi:', error);
+                    alert(error.message);
+                }
+            });
+
+            function resetForm() {
+                document.getElementById('maHang').value = '';
+                document.getElementById('tenHang').value = '';
+                document.getElementById('soLuong').value = '';
+                document.getElementById('viTri').value = '';
+                document.getElementById('ghiChu').value = '';
+                document.getElementById('maNCC').value = '';
+                document.getElementById('tenNCC').value = '';
+                document.getElementById('soHD').value = '';
+                document.getElementById('soPO').value = '';
+                document.getElementById('hsd').value = '';
+                document.getElementById('nsx').value = '';
+                document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
+            }
+
+
+            // Hàm tìm kiếm NCC theo mã
+            async function searchNCC(maNCC) {
+                try {
+                    const response = await apiRequest('DanhMuc_NCC', 'Find', {
+                        Selector: {
+                            Filter: `[MA_NCC] = '${maNCC}'`
+                        }
+                    });
+                    // Kiểm tra response là một mảng và có phần tử
+                    if (Array.isArray(response) && response.length > 0) {
+                        const ncc = response[0];
+                        document.getElementById('tenNCC').value = ncc.TEN_NCC;
+                    } else {
+                        alert('Không tìm thấy nhà cung cấp với mã này');
+                    }
+                } catch (error) {
+                    console.error('Error searching NCC:', error);
+                    alert('Lỗi khi tìm kiếm nhà cung cấp: ' + error.message);
+                }
+            }
+
+            // Hàm tìm kiếm sản phẩm theo mã
+            async function searchProduct(maHang) {
+                try {
+                    const palletQuantity = $("#maHang").attr('data-pallet-quantity');
+                    if (palletQuantity) {
+                        return {
+                            palletQuantity: parseInt(palletQuantity),
+                            donGia: parseFloat($("#maHang").attr('data-don-gia'))
+                        };
+                    }
+
+                    const response = await apiRequest('DanhMuc_HH', 'Find', {
+                        Selector: {
+                            Filter: `[MA_HANG] = '${maHang}'`
+                        }
+                    });
+
+                    if (Array.isArray(response) && response.length > 0) {
+                        const product = response[0];
+                        document.getElementById('tenHang').value = product.TEN_HANG;
+                        return {
+                            palletQuantity: parseInt(product['So luong/1 Pallet']) || 0,
+                            donGia: parseFloat(product['Đơn Giá']) || 0
+                        };
+                    } else {
+                        alert('Không tìm thấy sản phẩm với mã này');
+                        return null;
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+                    alert('Lỗi khi tìm kiếm sản phẩm: ' + error.message);
+                    return null;
+                }
+            }
+
+            async function loadAllNCC() {
+                try {
+                    const response = await apiRequest('DanhMuc_NCC', 'Find', {
+                        Selector: {
+                            Columns: ["MA_NCC", "TEN_NCC"]
+                        }
+                    });
+
+                    if (Array.isArray(response) && response.length > 0) {
+                        const nccData = response.map(ncc => ({
+                            value: ncc.MA_NCC,
+                            label: `${ncc.MA_NCC} - ${ncc.TEN_NCC}`,
+                            tenNCC: ncc.TEN_NCC
+                        }));
+
+                        $("#maNCC").autocomplete({
+                            source: nccData,
+                            minLength: 0, // Hiển thị tất cả khi click
+                            select: function (event, ui) {
+                                $("#maNCC").val(ui.item.value);
+                                $("#tenNCC").val(ui.item.tenNCC);
+                                return false;
+                            }
+                        }).focus(function () {
+                            $(this).autocomplete("search", "");
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading NCC:", error);
+                }
+            }
+
+            async function loadAllProducts() {
+                try {
+                    const response = await apiRequest('DanhMuc_HH', 'Find', {
+                        Selector: {
+                            Columns: ["MA_HANG", "TEN_HANG", "So luong/1 Pallet", "Đơn Giá"]
+                        }
+                    });
+
+                    if (Array.isArray(response) && response.length > 0) {
+                        const productData = response.map(product => ({
+                            value: product.MA_HANG,
+                            label: `${product.MA_HANG} - ${product.TEN_HANG}`,
+                            tenHang: product.TEN_HANG,
+                            palletQuantity: product['So luong/1 Pallet'],
+                            donGia: product['Đơn Giá']
+                        }));
+
+                        $("#maHang").autocomplete({
+                            source: productData,
+                            minLength: 0,
+                            select: function (event, ui) {
+                                $("#maHang").val(ui.item.value);
+                                $("#tenHang").val(ui.item.tenHang);
+                                $("#maHang").attr('data-pallet-quantity', ui.item.palletQuantity);
+                                $("#maHang").attr('data-don-gia', ui.item.donGia);
+                                // Tự động chuyển con trỏ đến ô số lượng sau khi chọn mã hàng
+                                setTimeout(() => {
+                                    $("#soLuong").focus();
+                                }, 100);
+                                return false;
+                            }
+                        }).focus(function () {
+                            $(this).autocomplete("search", "");
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading Products:", error);
+                }
+            }
+
+            // Thêm sự kiện tìm kiếm tự động khi nhập mã NCC
+            document.getElementById('maNCC').addEventListener('change', function () {
+                const maNCC = this.value;
+                if (maNCC) {
+                    searchNCC(maNCC);
+                }
+            });
+
+            // Thêm sự kiện tìm kiếm tự động khi nhập mã hàng
+            document.getElementById('maHang').addEventListener('change', async function () {
+                const maHang = this.value; // Lấy giá trị mã hàng mà người dùng nhập
+                if (maHang) {
+                    // Gọi hàm tìm kiếm sản phẩm
+                    const palletQuantity = await searchProduct(maHang);
+                }
+            });
+
+            // Hàm tạo ID tiếp theo
+            async function generateNextId() {
+                try {
+                    const now = new Date();
+                    const year = now.getFullYear().toString().slice(-2);
+                    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    const day = now.getDate().toString().padStart(2, '0');
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                    const seconds = now.getSeconds().toString().padStart(2, '0');
+
+                    const timestamp = `${year}${month}${day}_${hours}${minutes}${seconds}`;
+                    return {
+                        id: `PNK${timestamp}`,
+                        soLot: `LOT${timestamp}`
+                    };
+                } catch (error) {
+                    console.error('Lỗi khi tạo ID:', error);
+                    return null;
+                }
+            }
+
+            // Cập nhật ID mới mỗi giây
+            function updateIdPeriodically() {
+                const idField = document.getElementById('id');
+                const soLotField = document.getElementById('soLot');
+                if (idField && soLotField) {
+                    generateNextId().then(result => {
+                        if (result) {
+                            idField.value = result.id;
+                            soLotField.value = result.soLot;
+                        }
+                    });
+                }
+            }
+
+
+            // Thiết lập giá trị mặc định cho trường Ngày Tháng
+            document.addEventListener('DOMContentLoaded', async function () {
+                // Đặt ngày hiện tại cho trường ngày tháng
+                const today = new Date().toISOString().split('T')[0];
+                const ngayThangInput = document.getElementById('ngayThang');
+                if (ngayThangInput) {
+                    ngayThangInput.value = today;
+                }
+
+                // Tạo và gán ID và soLot mới
+                const result = await generateNextId();
+                if (result) {
+                    document.getElementById('id').value = result.id;
+                    document.getElementById('soLot').value = result.soLot;
+                }
+
+                // Khóa trường ID không cho sửa
+                document.getElementById('id').readOnly = true;
+                document.getElementById('id').classList.add('bg-gray-50');
+
+                // Thiết lập cập nhật định kỳ
+                setInterval(updateIdPeriodically, 1000);
+            });
+
+            // Gọi hàm khi tài liệu được load
+            $(document).ready(function () {
+                loadAllProducts();
+                loadAllNCC();
+
+            });
+        </script>
+</body>
+
+</html>
