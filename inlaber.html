@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-    <title>Quản Lý Dữ Liệu</title>
+    <title>Nhập kho</title>
     <style>
         * {
             margin: 0;
@@ -84,7 +84,6 @@
             width: 190mm;
             height: 110mm;
             padding: 0;
-            border: 1px solid #000;
             background: white;
             page-break-inside: avoid;
             position: relative;
@@ -97,18 +96,18 @@
         }
 
         .print-label table {
-            width: 100%;
-            height: 100%;
-            border-collapse: collapse;
             table-layout: fixed;
         }
 
         .print-label td {
-            border: 2px solid black;
+            border: 1px solid black;
             padding: 2px 4px;
             font-size: 12px;
             font-weight: bold;
             vertical-align: middle;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .print-label tr:nth-child(1) {
@@ -124,19 +123,19 @@
         }
 
         .print-label tr:nth-child(4) {
-            height: 10mm;
+            height: 9mm;
         }
 
         .print-label tr:nth-child(5) {
-            height: 10mm;
+            height: 9mm;
         }
 
         .print-label tr:nth-child(6) {
-            height: 10mm;
+            height: 9mm;
         }
 
         .print-label tr:nth-child(7) {
-            height: 26mm;
+            height: 27mm;
         }
 
         .print-label .header-cell {
@@ -151,23 +150,38 @@
             vertical-align: middle;
         }
 
-        .print-label .qr-code-cell {
-            width: 100px;
-            text-align: center;
-            vertical-align: middle;
-            border: none;
-            padding: 5px;
+        .qr-code-cell {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+
+        .qr-cell {
+            width: 30%;
+            position: relative;
+            border: none !important;
+            border-right: 1px solid black !important;
+            border-bottom: 1px solid black !important;
+            padding: 0 !important;
+            /* Thêm rowspan styling */
+            vertical-align: middle !important;
+        }
+
+        .qrcode {
+            display: block;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            /* Căn giữa theo chiều ngang */
+        }
+
 
         .barcode {
             width: 100%;
             height: auto;
         }
 
-        .qrcode {
-            width: 90px;
-            height: 90px;
-        }
 
         .selected-row {
             background-color: #e5edff !important;
@@ -245,7 +259,7 @@
             <div class="bg-white shadow-lg rounded-lg mb-6">
                 <div class="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-t-lg">
                     <div class="flex justify-between items-center">
-                        <h1 class="text-2xl font-semibold text-white">Quản Lý Dữ Liệu Sản Phẩm</h1>
+                        <h1 class="text-2xl font-semibold text-white">Chi tiết nhập kho</h1>
                         <button onclick="printSelectedItems()"
                             class="px-4 py-2 bg-white text-blue-600 rounded hover:bg-blue-50 font-medium">
                             In nhãn đã chọn
@@ -321,52 +335,62 @@
 
         function createPrintLabel(item, index) {
             return `
-                <div class="print-label ${index === 0 ? 'first-label' : ''}">
-                    <table>
-                        <tr>
-                            <td colspan="4"></td>
-                            <td style="width: 120px; vertical-align: middle">
-                                <canvas id="barcode-${index}" class="barcode"></canvas>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="header-cell">Tên</td>
-                            <td colspan="4" style="vertical-align: middle">${item.TEN_HANG || ''}</td>
-                        </tr>
-                        <tr>
-                            <td class="header-cell">HSD</td>
-                            <td colspan="4" style="font-size: 24px; font-weight: bold">${formatDate(item.HSD)}</td>
-                        </tr>
-                        <tr>
-                            <td class="header-cell">Số Lot:</td>
-                            <td>${item.SO_LOT || ''}</td>
-                            <td>Ngày: </td>
-                            <td style="border-left: 2px solid black">${formatDate(item.NGAY_THANG)}</td>
-                            <td style="text-align: center;">Qr</td>
-                        </tr>
-                        <tr>
-                            <td class="header-cell">P Nhập:</td>
-                            <td></td>
-                            <td style="border-left: 2px solid black">Số Thùng:</td>
-                            <td></td>
-                            <td style="border:none; border-right: 2px solid black"></td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" style="border-bottom: 2px solid black">Số Lượng</td>
-                            <td style="border-left: 2px solid black; border-bottom: 2px solid black">Vị Trí</td>
-                            <td style="border:none; border-right: 2px solid black"></td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" class="quantity" style="font-size: 48px; height: 100%; border-right: none">${item.SO_LUONG || ''}</td>
-                            <td style="border-left: 2px solid black">${item.VI_TRI || ''}</td>
-                            <td class="qr-code-cell" style="border-right: 2px solid black; border-bottom: 2px solid black; position: relative;">
-                                <canvas id="qrcode-${index}" class="qrcode"></canvas>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            `;
+        <div class="print-label ${index === 0 ? 'first-label' : ''}">
+            <table>
+                <tr>
+                    <td colspan="4">
+                    </td>
+                    <td style="text-align: center;">
+                        <canvas id="barcode-${index}" class="barcode"></canvas>
+                         <div id="barcode-result-${index}" style="font-size: 6px; text-align: center; margin-top: 2px;"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="header-cell" style="width: 12%; text-align: left; font-size: 40px; ">Tên</td>
+                    <td colspan="4" style="width: 88%; text-align: left; font-size: 30px;">${item.TEN_HANG || ''}</td>
+                </tr>
+                <tr>
+                    <td class="header-cell" style="width: 12%; font-size: 40px;">HSD</td>
+                    <td colspan="4" style="width: 88%; font-size: 40px; font-weight: bold; text-align: left;">
+                        ${formatDate(item.HSD)}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="header-cell" style="width: 12%; font-size: 20px;">Số Lot:</td>
+                    <td style="width: 18%; text-align: center;">${item.SO_LOT || ''}</td>
+                    <td style="width: 18%; text-align: center; font-size: 20px;">Ngày nhập:</td>
+                    <td style="width: 22%; text-align: center; border-left: 1px solid black; font-size: 20px;">
+                        ${formatDate(item.NGAY_THANG)}
+                    </td>
+                    <td style="width: 30%; text-align: center; font-size: 22px;">QR</td>
+                </tr>
+                <tr>
+                    <td class="header-cell" style="width: 12%; font-size: 20px;">P Nhập:</td>
+                    <td style="width: 18%;"></td>
+                    <td style="width: 18%; text-align: center; border-left: 1px solid black; font-size: 20px;">Số Thùng:</td>
+                    <td style="width: 22%;"></td>
+                    <td class="qr-cell" rowspan="3">
+                        <canvas id="qrcode-${index}" class="qrcode"></canvas>
+                        <div id="qr-result-${index}" style="font-size: 8px; text-align: center; margin-top: 5px;"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="width: 48%; border-bottom: 1px solid black; text-align: center; font-size: 20px;">Số Lượng</td>
+                    <td style="width: 22%; text-align: center; font-size: 25px;">
+                        Vị Trí
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="quantity" style="font-size: 60px; height: 100%; text-align: center;">
+                        ${item.SO_LUONG || ''}
+                    </td>
+                    <td style="font-size: 60px; text-align: center;">${item.VI_TRI || ''}</td>
+                </tr>
+            </table>
+        </div>
+    `;
         }
+
 
         function createPrintPages(items) {
             let html = '';
@@ -387,29 +411,47 @@
             items.forEach((item, index) => {
                 const barcodeElement = document.getElementById(`barcode-${index}`);
                 if (barcodeElement) {
-                    JsBarcode(barcodeElement, item.MA_HANG || "NO_CODE", {
+                    const barcodeValue = item.MA_HANG || "NO_CODE";
+                    JsBarcode(barcodeElement, barcodeValue, {
                         width: 0.6,
                         height: 30,
                         fontSize: 0,
                         margin: 0,
                         displayValue: false
                     });
+
+                    // Display barcode value below the barcode
+                    const barcodeResultElement = document.getElementById(`barcode-result-${index}`);
+                    if (barcodeResultElement) {
+                        barcodeResultElement.textContent = barcodeValue;
+                    }
                 }
 
                 const qrElement = document.getElementById(`qrcode-${index}`);
                 if (qrElement) {
-                    const qrData = JSON.stringify({
-                        ma: item.MA_HANG,
-                        ns: item.NGAY_THANG,
-                        sl: item.SO_LUONG,
-                        vt: item.VI_TRI
-                    });
+                    // Format the date
+                    const date = new Date(item.NGAY_THANG);
+                    const formattedDate = date.toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    }).replace(/\//g, '');
 
+                    // Create the formatted string
+                    const qrData = `${item.MA_HANG || 'NO_CODE'}_${formattedDate}_${item.SO_LUONG || '0'}_${item.VI_TRI || 'NO_LOC'}`;
+
+                    // Generate QR code
                     QRCode.toCanvas(qrElement, qrData, {
-                        width: 90,
-                        height: 90,
+                        width: 100,
+                        height: 100,
                         margin: 0
                     });
+
+                    // Display QR data below the code
+                    const qrResultElement = document.getElementById(`qr-result-${index}`);
+                    if (qrResultElement) {
+                        qrResultElement.textContent = qrData;
+                    }
                 }
             });
 
