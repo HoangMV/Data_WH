@@ -236,6 +236,25 @@
             border-radius: 8px;
         }
 
+        /* Thêm style mới cho checkbox */
+        .group-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .group-selected {
+            background-color: #e5edff !important;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: linear-gradient(to right, #2563eb, #60a5fa);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
         @media screen and (max-width: 768px) {
             .print-label {
                 width: 100%;
@@ -257,10 +276,10 @@
     <div id="mainContent">
         <div class="mx-auto p-6">
             <div class="bg-white shadow-lg rounded-lg mb-6">
-                <div class="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-t-lg">
+                <div class="sticky-header">
                     <div class="flex justify-between items-center">
                         <h1 class="text-2xl font-semibold text-white">Chi tiết nhập kho</h1>
-                        <button onclick="printSelectedItems()"
+                        <button onclick="printAllSelected()"
                             class="px-4 py-2 bg-white text-blue-600 rounded hover:bg-blue-50 font-medium">
                             In nhãn đã chọn
                         </button>
@@ -277,6 +296,10 @@
                             <tr>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" class="group-checkbox" onclick="toggleAllGroups(this)">
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     SO_PHIEU</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -287,6 +310,9 @@
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     NGAY_THANG</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    SỐ LƯỢNG</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     SỐ MẶT HÀNG</th>
@@ -528,46 +554,98 @@
 
         function createDetailRow(item) {
             return `
-                <tr class="detail-row bg-gray-50" data-phieu="${item.SO_PHIEU}" style="display: none;">
-                    <td colspan="6">
-                        <div class="p-4">
-                            <div class="grid grid-cols-5 gap-4">
-                                <div>
-                                    <p class="text-sm font-medium">Mã hàng: ${item.MA_HANG || ''}</p>
-                                    <p class="text-sm">Tên hàng: ${item.TEN_HANG || ''}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm">Số lượng: ${item.SO_LUONG || ''}</p>
-                                    <p class="text-sm">Số lô: ${item.SO_LOT || ''}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm">Đơn vị: ${item.DVT || ''}</p>
-                                    <p class="text-sm">Vị trí: ${item.VI_TRI || ''}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm">NSX: ${item.NSX || ''}</p>
-                                    <p class="text-sm">HSD: ${item.HSD || ''}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm">Thành tiền: ${formatCurrency(item.THANH_TIEN || 0)}</p>
-                                    <p class="text-sm mt-2">Ghi chú: ${item.GHI_CHU || ''}</p>
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                                <button onclick="toggleRowSelection(this)" 
-                                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm mr-2"
-                                        data-item='${JSON.stringify(item)}'>
-                                    Chọn để in
-                                </button>
-                                <button onclick='openPrintModal(${JSON.stringify(item).replace(/'/g, "\\'")})' 
-                                        class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
-                                    In Nhãn đơn
-                                </button>
-                            </div>
+        <tr class="detail-row bg-gray-50" data-phieu="${item.SO_PHIEU}" style="display: none;">
+            <td colspan="8">
+                <div class="p-4">
+                    <div class="grid grid-cols-5 gap-4">
+                        <div>
+                            <p class="text-sm font-medium">Mã hàng: ${item.MA_HANG || ''}</p>
+                            <p class="text-sm">Tên hàng: ${item.TEN_HANG || ''}</p>
                         </div>
-                    </td>
-                </tr>
-            `;
+                        <div>
+                            <p class="text-sm">Số lượng: ${item.SO_LUONG || ''}</p>
+                            <p class="text-sm">Số lô: ${item.SO_LOT || ''}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm">Đơn vị: ${item.DVT || ''}</p>
+                            <p class="text-sm">Vị trí: ${item.VI_TRI || ''}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm">NSX: ${item.NSX || ''}</p>
+                            <p class="text-sm">HSD: ${item.HSD || ''}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm">Thành tiền: ${formatCurrency(item.THANH_TIEN || 0)}</p>
+                            <p class="text-sm mt-2">Ghi chú: ${item.GHI_CHU || ''}</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <button onclick="toggleRowSelection(this)" 
+                                class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm mr-2"
+                                data-item='${JSON.stringify(item)}'>
+                            Chọn để in
+                        </button>
+                        <button onclick='openPrintModal(${JSON.stringify(item).replace(/'/g, "\\'")})' 
+                                class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                            In Nhãn đơn
+                        </button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    `;
+        }
+
+        function toggleGroup(checkbox, soPhieu) {
+            const groupRow = checkbox.closest('.group-row');
+            groupRow.classList.toggle('group-selected');
+
+            // Tự động chọn/bỏ chọn tất cả các items trong group
+            const detailRows = document.querySelectorAll(`.detail-row[data-phieu="${soPhieu}"]`);
+            detailRows.forEach(row => {
+                const selectButton = row.querySelector('button[data-item]');
+                if (checkbox.checked && !row.classList.contains('selected-row')) {
+                    toggleRowSelection(selectButton);
+                } else if (!checkbox.checked && row.classList.contains('selected-row')) {
+                    toggleRowSelection(selectButton);
+                }
+            });
+        }
+
+        async function printAllSelected() {
+            const selectedItems = [];
+
+            // Lấy các items được chọn riêng lẻ
+            const selectedRows = document.querySelectorAll('.detail-row.selected-row');
+            selectedRows.forEach(row => {
+                const itemData = row.getAttribute('data-selected-item');
+                if (itemData) {
+                    try {
+                        selectedItems.push(JSON.parse(itemData));
+                    } catch (e) {
+                        console.error('Error parsing item data:', e);
+                    }
+                }
+            });
+
+            if (selectedItems.length === 0) {
+                alert('Vui lòng chọn ít nhất một mặt hàng để in');
+                return;
+            }
+
+            await performPrint(selectedItems);
+        }
+
+        function toggleAllGroups(checkbox) {
+            const allGroupCheckboxes = document.querySelectorAll('.group-row .group-checkbox');
+            const allGroupRows = document.querySelectorAll('.group-row');
+
+            allGroupCheckboxes.forEach((cb, index) => {
+                cb.checked = checkbox.checked;
+                const groupRow = allGroupRows[index];
+                const soPhieu = groupRow.getAttribute('data-phieu');
+                toggleGroup(cb, soPhieu);
+            });
         }
 
         function createGroupRow(groupData) {
@@ -576,20 +654,30 @@
                 return sum + value;
             }, 0);
 
+            // Tính tổng số lượng
+            const totalQuantity = groupData.items.reduce((sum, item) => {
+                const quantity = parseFloat(item.SO_LUONG) || 0;
+                return sum + quantity;
+            }, 0);
+
             return `
-                <tr class="group-row hover:bg-blue-50 cursor-pointer" data-phieu="${groupData.SO_PHIEU}">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${groupData.SO_PHIEU}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            ${groupData.TRANG_THAI || ''}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(totalAmount)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(groupData.NGAY_THANG)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${groupData.items.length}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${groupData.TEN_NCC || ''}</td>
-                </tr>
-            `;
+        <tr class="group-row hover:bg-blue-50" data-phieu="${groupData.SO_PHIEU}">
+            <td class="px-6 py-4">
+                <input type="checkbox" class="group-checkbox" onclick="event.stopPropagation(); toggleGroup(this, '${groupData.SO_PHIEU}')">
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">${groupData.SO_PHIEU}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    ${groupData.TRANG_THAI || ''}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(totalAmount)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(groupData.NGAY_THANG)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">${formatCurrency(totalQuantity)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${groupData.items.length}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${groupData.TEN_NCC || ''}</td>
+        </tr>
+    `;
         }
 
         function groupData(data) {
@@ -628,13 +716,16 @@
 
         function initializeEventListeners() {
             document.querySelectorAll('.group-row').forEach(row => {
-                row.addEventListener('click', function () {
-                    const soPhieu = this.getAttribute('data-phieu');
-                    const detailRows = document.querySelectorAll(`.detail-row[data-phieu="${soPhieu}"]`);
-                    detailRows.forEach(detailRow => {
-                        detailRow.style.display = detailRow.style.display === 'none' ? 'table-row' : 'none';
-                    });
-                    this.classList.toggle('bg-blue-100');
+                row.addEventListener('click', function (e) {
+                    // Chỉ xử lý click khi không phải click vào checkbox
+                    if (!e.target.classList.contains('group-checkbox')) {
+                        const soPhieu = this.getAttribute('data-phieu');
+                        const detailRows = document.querySelectorAll(`.detail-row[data-phieu="${soPhieu}"]`);
+                        detailRows.forEach(detailRow => {
+                            detailRow.style.display = detailRow.style.display === 'none' ? 'table-row' : 'none';
+                        });
+                        this.classList.toggle('bg-blue-100');
+                    }
                 });
             });
         }
