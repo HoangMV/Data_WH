@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Form</title>
+    <title>Phiếu Nhập Kho</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
@@ -45,14 +45,16 @@
     }
 
     /* Đảm bảo nội dung trong ô không bị wrap */
-    td, th {
+    td,
+    th {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     /* Style cho input trong bảng */
-    td input, td select {
+    td input,
+    td select {
         width: 100%;
         min-width: 0;
         box-sizing: border-box;
@@ -61,6 +63,35 @@
     /* Đảm bảo dropdown không bị cắt */
     td select {
         padding-right: 20px;
+    }
+
+    .table-container {
+        position: relative;
+    }
+
+    .resize-handle {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        cursor: col-resize;
+        background-color: #ddd;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    th {
+        position: relative;
+    }
+
+    th:hover .resize-handle {
+        opacity: 1;
+    }
+
+    .resizing {
+        cursor: col-resize;
+        user-select: none;
     }
 </style>
 
@@ -484,50 +515,50 @@
                     const thanhTien = item.donGia * item.soLuong;
 
                     row.innerHTML = `
-            <td class="px-6 py-4">${item.id}</td>
-             <td class="px-6 py-4">
+            <td class="px-4 py-4">${item.id}</td>
+             <td class="px-4 py-4">
                 <select class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'trangThai', this.value)">
                     <option value="Tạo mới" ${item.trangThai === 'Tạo mới' ? 'selected' : ''}>Tạo mới</option>
                     <option value="Hoàn thành" ${item.trangThai === 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
                 </select>
             </td>
-            <td class="px-6 py-4">${item.tenHang}</td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">${item.tenHang}</td>
+            <td class="px-4 py-4">
                 <input type="number" value="${item.soLuong}" 
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'soLuong', this.value)">
             </td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">
                 <input type="date" value="${item.nsx}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'nsx', this.value)">
             </td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">
                 <input type="date" value="${item.hsd}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'hsd', this.value)">
             </td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">
                 <input type="text" value="${item.soLot}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'soLot', this.value)">
             </td>
-            <td class="px-6 py-4">${item.tenNCC}</td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">${item.tenNCC}</td>
+            <td class="px-4 py-4">
                 <input type="text" value="${item.viTri}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'viTri', this.value)">
             </td>
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">
                 <input type="text" value="${item.ghiChu}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'ghiChu', this.value)">
             </td>
-            <td class="px-6 py-4">${item.donGia.toLocaleString('vi-VN')}</td>
-            <td class="px-6 py-4">${thanhTien.toLocaleString('vi-VN')}</td>
+            <td class="px-4 py-4">${item.donGia.toLocaleString('vi-VN')}</td>
+            <td class="px-4 py-4">${thanhTien.toLocaleString('vi-VN')}</td>
            
-            <td class="px-6 py-4">
+            <td class="px-4 py-4">
                 <button onclick="deleteRow(${index})" 
                         class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
                     ✕
@@ -584,6 +615,32 @@
             document.getElementById('inventoryForm').addEventListener('submit', async function (e) {
                 e.preventDefault();
 
+                // Validation đơn giản
+                const maHang = document.getElementById('maHang').value;
+                const soLuong = document.getElementById('soLuong').value;
+                const tenHang = document.getElementById('tenHang').value;
+
+                // Kiểm tra mã hàng
+                if (!maHang.trim()) {
+                    alert('Vui lòng nhập mã hàng');
+                    document.getElementById('maHang').focus();
+                    return;
+                }
+
+                // Kiểm tra tên hàng (đảm bảo mã hàng tồn tại)
+                if (!tenHang.trim()) {
+                    alert('Mã hàng không tồn tại trong hệ thống');
+                    document.getElementById('maHang').focus();
+                    return;
+                }
+
+                // Kiểm tra số lượng
+                if (!soLuong || soLuong <= 0) {
+                    alert('Vui lòng nhập số lượng hợp lệ');
+                    document.getElementById('soLuong').focus();
+                    return;
+                }
+
                 const formData = {
                     id: document.getElementById('id').value,
                     ngayThang: document.getElementById('ngayThang').value,
@@ -616,7 +673,7 @@
                     if (product) {
                         const palletQuantity = parseInt(product['So luong/1 Pallet']) || 0;
                         const donGia = parseFloat(product['Đơn Giá']) || 0;
-                        const nhomHang = product['Nhóm Hàng'] || ''; // Lấy nhóm hàng từ sản phẩm
+                        const nhomHang = product['Nhóm Hàng'] || '';
 
                         const totalEntries = Math.ceil(formData.soLuong / palletQuantity);
                         const remainingQuantity = formData.soLuong % palletQuantity;
@@ -629,7 +686,7 @@
                                 soLot: `${formData.soLot}_P${i + 1}`,
                                 donGia: donGia,
                                 trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới',
-                                nhomHang: nhomHang // Thêm nhóm hàng vào dữ liệu
+                                nhomHang: nhomHang
                             };
 
                             temporaryData.push(entryData);
@@ -651,7 +708,6 @@
                         document.getElementById('hsd').value = '';
                         document.getElementById('nsx').value = '';
                         document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
-
 
                     } else {
                         throw new Error('Không tìm thấy sản phẩm với mã hàng này');
@@ -839,6 +895,50 @@
                     });
                 }
             }
+
+            function initResizableTable() {
+                const table = document.querySelector('table');
+                const headers = table.querySelectorAll('th');
+                let resizingHeader = null;
+                let startX, startWidth;
+
+                // Add resize handles to each header
+                headers.forEach(header => {
+                    const handle = document.createElement('div');
+                    handle.className = 'resize-handle';
+                    header.appendChild(handle);
+                    header.style.width = header.offsetWidth + 'px';
+
+                    handle.addEventListener('mousedown', startResize);
+                });
+
+                function startResize(e) {
+                    resizingHeader = e.target.parentElement;
+                    startX = e.pageX;
+                    startWidth = resizingHeader.offsetWidth;
+                    document.addEventListener('mousemove', resize);
+                    document.addEventListener('mouseup', stopResize);
+                    document.body.classList.add('resizing');
+                }
+
+                function resize(e) {
+                    if (resizingHeader) {
+                        const width = startWidth + (e.pageX - startX);
+                        resizingHeader.style.width = width + 'px';
+                    }
+                }
+
+                function stopResize() {
+                    resizingHeader = null;
+                    document.removeEventListener('mousemove', resize);
+                    document.removeEventListener('mouseup', stopResize);
+                    document.body.classList.remove('resizing');
+                }
+            }
+
+            // Call after table is rendered or updated
+            document.addEventListener('DOMContentLoaded', initResizableTable);
+            setTimeout(initResizableTable, 1000); // For dynamic content
 
             // Thiết lập giá trị mặc định cho trường Ngày Tháng
             document.addEventListener('DOMContentLoaded', async function () {
