@@ -64,35 +64,6 @@
     td select {
         padding-right: 20px;
     }
-
-    .table-container {
-        position: relative;
-    }
-
-    .resize-handle {
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        cursor: col-resize;
-        background-color: #ddd;
-        opacity: 0;
-        transition: opacity 0.2s;
-    }
-
-    th {
-        position: relative;
-    }
-
-    th:hover .resize-handle {
-        opacity: 1;
-    }
-
-    .resizing {
-        cursor: col-resize;
-        user-select: none;
-    }
 </style>
 
 <body class="bg-gradient-to-br from-blue-50 to-blue-100 p-4">
@@ -104,9 +75,9 @@
                     <button type="submit"
                         class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded font-medium text-sm">✓
                         Lưu</button>
-                    <button type="button" onclick="window.close()"
-                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded font-medium text-sm">✗
-                        Thoát</button>
+                    <button type="button" onclick="resetForm()"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1.5 rounded font-medium text-sm">↺
+                        Làm mới</button>
                 </div>
             </div>
 
@@ -116,7 +87,7 @@
                     <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label class="text-sm font-medium text-gray-600">Số phiếu</label>
-                            <input type="text" id="id" class="w-full border rounded p-1.5 text-sm" value="10001">
+                            <input type="text" id="id" class="w-full border rounded p-1.5 text-sm" value="PNK000">
                         </div>
 
                         <div>
@@ -152,8 +123,7 @@
                     <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label class="text-sm font-medium text-gray-600">Số Lot</label>
-                            <input type="text" id="soLot" class="w-full border rounded p-1.5 text-sm"
-                                value="Lot240512_001">
+                            <input type="text" id="soLot" class="w-full border rounded p-1.5 text-sm" value="Lot000">
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-600">Số HĐ</label>
@@ -208,7 +178,7 @@
 
     <div class="max-w-8xl mx-auto space-y-6">
         <!-- Temporary Table Card -->
-        <div class="bg-white rounded-xl shadow-lg p-8 animate__animated animate__fadeIn">
+        <div class="bg-white rounded-xl shadow-lg p-4 animate__animated animate__fadeIn">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-gray-800">Bảng Tạm</h2>
                 <button onclick="saveToAppSheet()"
@@ -220,57 +190,61 @@
                 <table class="w-full table-fixed border-collapse whitespace-nowrap">
                     <thead>
                         <tr class="bg-gray-50">
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                                 style="min-width: 100px; width: 100px;">
                                 ID
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            </th> -->
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
                                 style="min-width: 120px; width: 120px;">
                                 Trạng Thái
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 200px; width: 200px;">
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 180px; width: 180px;">
+                                Mã Hàng
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 300px; max-width: 500px;">
                                 Tên Hàng
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 100px; width: 100px;">
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 90px; width: 90px;">
                                 Số Lượng
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 120px; width: 120px;">
-                                NSX
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 120px; width: 120px;">
-                                HSD
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 150px; width: 150px;">
-                                Số Lot
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 200px; width: 200px;">
-                                Tên NCC
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
                                 style="min-width: 100px; width: 100px;">
                                 Vị Trí
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                NSX
+                            </th>
+                            <th class="px-2 py-3 tetext-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 120px; width: 120px;">
+                                HSD
+                            </th>
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 150px; width: 150px;">
+                                Số Lot
+                            </th>
+                            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 200px; width: 200px;">
+                                Tên NCC
+                            </th> -->
+
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
                                 style="min-width: 150px; width: 150px;">
                                 Ghi Chú
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                            <!-- <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                                 style="min-width: 120px; width: 120px;">
                                 Đơn Giá
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                                 style="min-width: 120px; width: 120px;">
                                 Thành Tiền
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                                style="min-width: 100px; width: 100px;">
-                                Thao Tác
+                            </th> -->
+                            <th class="px-2 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                                style="min-width: 60px; width: 60px;">
                             </th>
                         </tr>
                     </thead>
@@ -454,7 +428,7 @@
                         "Số HĐ": item.soHD,
                         "Số PO#": item.soPO,
                         TRANG_THAI: item.trangThai, // Sử dụng trạng thái từ dữ liệu
-                        SO_PHIEU: item.id,
+                        SO_PHIEU: document.getElementById('id').value,
                         MA_HANG: item.maHang,
                         SO_LUONG: item.soLuong,
                         NSX: item.nsx,
@@ -515,50 +489,48 @@
                     const thanhTien = item.donGia * item.soLuong;
 
                     row.innerHTML = `
-            <td class="px-4 py-4">${item.id}</td>
-             <td class="px-4 py-4">
+             <td class="px-2 py-4">
                 <select class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'trangThai', this.value)">
                     <option value="Tạo mới" ${item.trangThai === 'Tạo mới' ? 'selected' : ''}>Tạo mới</option>
                     <option value="Hoàn thành" ${item.trangThai === 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
                 </select>
             </td>
-            <td class="px-4 py-4">${item.tenHang}</td>
-            <td class="px-4 py-4">
+            <td class="px-2 py-4 text-center">${item.maHang}</td>
+            <td class="px-2 py-4 text-center">${item.tenHang}</td>
+            <td class="px-2 py-4 text-center">
                 <input type="number" value="${item.soLuong}" 
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'soLuong', this.value)">
             </td>
-            <td class="px-4 py-4">
-                <input type="date" value="${item.nsx}"
-                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
-                    onchange="updateField(${index}, 'nsx', this.value)">
-            </td>
-            <td class="px-4 py-4">
-                <input type="date" value="${item.hsd}"
-                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
-                    onchange="updateField(${index}, 'hsd', this.value)">
-            </td>
-            <td class="px-4 py-4">
-                <input type="text" value="${item.soLot}"
-                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
-                    onchange="updateField(${index}, 'soLot', this.value)">
-            </td>
-            <td class="px-4 py-4">${item.tenNCC}</td>
-            <td class="px-4 py-4">
+            <td class="px-2 py-4 text-center">
                 <input type="text" value="${item.viTri}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'viTri', this.value)">
             </td>
-            <td class="px-4 py-4">
+            <td class="px-2 py-4 text-center">
+                <input type="date" value="${item.nsx}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'nsx', this.value)">
+            </td>
+            <td class="px-2 py-4 text-center">
+                <input type="date" value="${item.hsd}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'hsd', this.value)">
+            </td>
+            <td class="px-2 py-4 text-center">
+                <input type="text" value="${item.soLot}"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
+                    onchange="updateField(${index}, 'soLot', this.value)">
+            </td>
+            
+            <td class="px-2 py-4 text-center">
                 <input type="text" value="${item.ghiChu}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500"
                     onchange="updateField(${index}, 'ghiChu', this.value)">
             </td>
-            <td class="px-4 py-4">${item.donGia.toLocaleString('vi-VN')}</td>
-            <td class="px-4 py-4">${thanhTien.toLocaleString('vi-VN')}</td>
            
-            <td class="px-4 py-4">
+            <td class="px-2 py-4 text-center">
                 <button onclick="deleteRow(${index})" 
                         class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
                     ✕
@@ -615,48 +587,28 @@
             document.getElementById('inventoryForm').addEventListener('submit', async function (e) {
                 e.preventDefault();
 
-                // Validation đơn giản
+                // Validation
                 const maHang = document.getElementById('maHang').value;
                 const soLuong = document.getElementById('soLuong').value;
                 const tenHang = document.getElementById('tenHang').value;
 
-                // Kiểm tra mã hàng
                 if (!maHang.trim()) {
                     alert('Vui lòng nhập mã hàng');
                     document.getElementById('maHang').focus();
                     return;
                 }
 
-                // Kiểm tra tên hàng (đảm bảo mã hàng tồn tại)
                 if (!tenHang.trim()) {
                     alert('Mã hàng không tồn tại trong hệ thống');
                     document.getElementById('maHang').focus();
                     return;
                 }
 
-                // Kiểm tra số lượng
                 if (!soLuong || soLuong <= 0) {
                     alert('Vui lòng nhập số lượng hợp lệ');
                     document.getElementById('soLuong').focus();
                     return;
                 }
-
-                const formData = {
-                    id: document.getElementById('id').value,
-                    ngayThang: document.getElementById('ngayThang').value,
-                    soHD: document.getElementById('soHD').value,
-                    soPO: document.getElementById('soPO').value,
-                    maHang: document.getElementById('maHang').value,
-                    tenHang: document.getElementById('tenHang').value,
-                    soLuong: parseInt(document.getElementById('soLuong').value),
-                    nsx: document.getElementById('nsx').value,
-                    hsd: document.getElementById('hsd').value,
-                    soLot: document.getElementById('soLot').value,
-                    tenNCC: document.getElementById('tenNCC').value,
-                    ghiChu: document.getElementById('ghiChu').value,
-                    viTri: document.getElementById('viTri').value,
-                    trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới'
-                };
 
                 try {
                     const response = await apiRequest('DanhMuc_HH', 'Find', {
@@ -669,12 +621,37 @@
                         throw new Error('Không tìm thấy danh sách sản phẩm');
                     }
 
-                    const product = response.find(item => item.MA_HANG === formData.maHang);
+                    const product = response.find(item => item.MA_HANG === maHang);
                     if (product) {
-                        const palletQuantity = parseInt(product['So luong/1 Pallet']) || 0;
+                        const palletQuantity = parseInt(product['So luong/1 Pallet']);
+
+                        // Check for invalid pallet quantity
+                        if (!palletQuantity || palletQuantity <= 0) {
+                            alert(`Mã hàng ${maHang} chưa có thông tin Số lượng/1 Pallet. Vui lòng cập nhật thông tin trước khi nhập kho.`);
+                            return;
+                        }
+
+                        const formData = {
+                            id: document.getElementById('id').value,
+                            ngayThang: document.getElementById('ngayThang').value,
+                            soHD: document.getElementById('soHD').value,
+                            soPO: document.getElementById('soPO').value,
+                            maHang: maHang,
+                            tenHang: tenHang,
+                            soLuong: parseInt(soLuong),
+                            nsx: document.getElementById('nsx').value,
+                            hsd: document.getElementById('hsd').value,
+                            soLot: document.getElementById('soLot').value,
+                            tenNCC: document.getElementById('tenNCC').value,
+                            ghiChu: document.getElementById('ghiChu').value,
+                            viTri: document.getElementById('viTri').value,
+                            trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới'
+                        };
+
                         const donGia = parseFloat(product['Đơn Giá']) || 0;
                         const nhomHang = product['Nhóm Hàng'] || '';
 
+                        // Split into multiple entries based on pallet quantity
                         const totalEntries = Math.ceil(formData.soLuong / palletQuantity);
                         const remainingQuantity = formData.soLuong % palletQuantity;
 
@@ -685,10 +662,8 @@
                                 soLuong: currentQuantity,
                                 soLot: `${formData.soLot}_P${i + 1}`,
                                 donGia: donGia,
-                                trangThai: document.getElementById('viTri').value.trim() ? 'Hoàn thành' : 'Tạo mới',
                                 nhomHang: nhomHang
                             };
-
                             temporaryData.push(entryData);
                         }
 
@@ -698,16 +673,16 @@
                         // Reset form fields
                         document.getElementById('maHang').value = '';
                         document.getElementById('tenHang').value = '';
-                        document.getElementById('soLuong').value = '';
-                        document.getElementById('viTri').value = '';
-                        document.getElementById('ghiChu').value = '';
-                        document.getElementById('maNCC').value = '';
-                        document.getElementById('tenNCC').value = '';
-                        document.getElementById('soHD').value = '';
-                        document.getElementById('soPO').value = '';
+                        // document.getElementById('soLuong').value = '';
+                        // document.getElementById('viTri').value = '';
+                        // document.getElementById('ghiChu').value = '';
+                        // document.getElementById('maNCC').value = '';
+                        // document.getElementById('tenNCC').value = '';
+                        // document.getElementById('soHD').value = '';
+                        // document.getElementById('soPO').value = '';
+                        // document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
                         document.getElementById('hsd').value = '';
                         document.getElementById('nsx').value = '';
-                        document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
 
                     } else {
                         throw new Error('Không tìm thấy sản phẩm với mã hàng này');
@@ -717,6 +692,21 @@
                     alert(error.message);
                 }
             });
+
+            function resetForm() {
+                document.getElementById('maHang').value = '';
+                document.getElementById('tenHang').value = '';
+                document.getElementById('soLuong').value = '';
+                document.getElementById('viTri').value = '';
+                document.getElementById('ghiChu').value = '';
+                document.getElementById('maNCC').value = '';
+                document.getElementById('tenNCC').value = '';
+                document.getElementById('soHD').value = '';
+                document.getElementById('soPO').value = '';
+                document.getElementById('hsd').value = '';
+                document.getElementById('nsx').value = '';
+                document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
+            }
 
 
             // Hàm tìm kiếm NCC theo mã
@@ -832,6 +822,10 @@
                                 $("#tenHang").val(ui.item.tenHang);
                                 $("#maHang").attr('data-pallet-quantity', ui.item.palletQuantity);
                                 $("#maHang").attr('data-don-gia', ui.item.donGia);
+                                // Tự động chuyển con trỏ đến ô số lượng sau khi chọn mã hàng
+                                setTimeout(() => {
+                                    $("#soLuong").focus();
+                                }, 100);
                                 return false;
                             }
                         }).focus(function () {
@@ -896,49 +890,6 @@
                 }
             }
 
-            function initResizableTable() {
-                const table = document.querySelector('table');
-                const headers = table.querySelectorAll('th');
-                let resizingHeader = null;
-                let startX, startWidth;
-
-                // Add resize handles to each header
-                headers.forEach(header => {
-                    const handle = document.createElement('div');
-                    handle.className = 'resize-handle';
-                    header.appendChild(handle);
-                    header.style.width = header.offsetWidth + 'px';
-
-                    handle.addEventListener('mousedown', startResize);
-                });
-
-                function startResize(e) {
-                    resizingHeader = e.target.parentElement;
-                    startX = e.pageX;
-                    startWidth = resizingHeader.offsetWidth;
-                    document.addEventListener('mousemove', resize);
-                    document.addEventListener('mouseup', stopResize);
-                    document.body.classList.add('resizing');
-                }
-
-                function resize(e) {
-                    if (resizingHeader) {
-                        const width = startWidth + (e.pageX - startX);
-                        resizingHeader.style.width = width + 'px';
-                    }
-                }
-
-                function stopResize() {
-                    resizingHeader = null;
-                    document.removeEventListener('mousemove', resize);
-                    document.removeEventListener('mouseup', stopResize);
-                    document.body.classList.remove('resizing');
-                }
-            }
-
-            // Call after table is rendered or updated
-            document.addEventListener('DOMContentLoaded', initResizableTable);
-            setTimeout(initResizableTable, 1000); // For dynamic content
 
             // Thiết lập giá trị mặc định cho trường Ngày Tháng
             document.addEventListener('DOMContentLoaded', async function () {
