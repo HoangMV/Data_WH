@@ -481,12 +481,10 @@
                         NHOM_HANG: item.nhomHang // Thêm nhóm hàng
                     }));
 
-                    for (const record of records) {
-                        const response = await apiRequest('NhapKho_CT', 'Add', {
-                            Rows: [record]
-                        });
-                        console.log('Kết quả lưu record:', response);
-                    }
+                    const response = await apiRequest('NhapKho_CT', 'Add', {
+                        Rows: records
+                    });
+                    console.log('Kết quả lưu record:', response);
 
                     temporaryData.length = 0;
                     document.getElementById('tempTableBody').innerHTML = '';
