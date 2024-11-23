@@ -460,11 +460,11 @@
                         </tr>
                         <tr>
                             <td class="header-cell" style="width: 12%; font-size: 20px;">P Nhập:</td>
-                            <td style="width: 18%;"></td>
+                            <td style="width: 18%; text-align: center;">${item.SO_PHIEU || ''}</td>
                             <td style="width: 18%; text-align: center; border-left: 1px solid black; font-size: 20px;">
                                 Số Thùng:
                             </td>
-                            <td style="width: 22%;"></td>
+                            <td style="width: 22%; text-align: center; font-size: 20px;">${item.GHI_CHU || ''}</td>
                             <td class="qr-cell" rowspan="3">
                                 <canvas id="qrcode-${index}" class="qrcode"></canvas>
                                 <div id="qr-result-${index}" style="font-size: 8px; text-align: center; margin-top: 5px;"></div>
