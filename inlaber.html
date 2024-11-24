@@ -263,7 +263,7 @@
     </div>
 
     <script>
-        
+
         document.addEventListener('contextmenu', function (e) {
             e.preventDefault();
         }, false);
@@ -445,13 +445,38 @@
             }
         }
 
+        let companyName = '';
+
+        function loadCompanyName() {
+            fetch(`https://${region}.appsheet.com/api/v2/apps/${appId}/tables/ThongTin_DN/Action`, {
+                method: 'POST',
+                headers: {
+                    'ApplicationAccessKey': accessKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    Action: 'Find',
+                    Properties: {
+                        Locale: 'vi-VN',
+                        Timezone: 'Asia/Ho_Chi_Minh'
+                    }
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        companyName = data[0].ten_cong_ty || '';
+                    }
+                });
+        }
+
         // Print Functions
         function createPrintLabel(item, index) {
             return `
                 <div class="print-label ${index === 0 ? 'first-label' : ''}">
                     <table>
                         <tr>
-                            <td colspan="4"></td>
+                            <td colspan="4" style="font-size: 30px;"> ${companyName}</td>
                             <td style="text-align: center;">
                                 <canvas id="barcode-${index}" class="barcode"></canvas>
                                 <div id="barcode-result-${index}" style="font-size: 6px; text-align: center; margin-top: 2px;"></div>
@@ -485,7 +510,6 @@
                             <td style="width: 22%; text-align: center; font-size: 20px;">${item.GHI_CHU || ''}</td>
                             <td class="qr-cell" rowspan="3">
                                 <canvas id="qrcode-${index}" class="qrcode"></canvas>
-                                <div id="qr-result-${index}" style="font-size: 8px; text-align: center; margin-top: 5px;"></div>
                             </td>
                         </tr>
                         <tr>
@@ -556,10 +580,10 @@
                         margin: 0
                     });
 
-                    const qrResultElement = document.getElementById(`qr-result-${index}`);
-                    if (qrResultElement) {
-                        qrResultElement.textContent = qrData;
-                    }
+                    // const qrResultElement = document.getElementById(`qr-result-${index}`);
+                    // if (qrResultElement) {
+                    //     qrResultElement.textContent = qrData;
+                    // }
                 }
             });
 
@@ -983,6 +1007,8 @@
 
         // Khởi tạo ứng dụng
         document.addEventListener('DOMContentLoaded', () => {
+            loadCompanyName(); // Thêm dòng này
+
             loadData();
             initializeSearch();
 
