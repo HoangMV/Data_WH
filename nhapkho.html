@@ -209,7 +209,8 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="text-sm font-medium text-gray-600">Số Lượng</label>
-                            <input type="number" id="soLuong" class="w-full border rounded p-1.5 text-sm">
+                            <input type="number" id="soLuong" class="w-full border rounded p-1.5 text-sm" step="0.01"
+                                min="0">
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-600">Vị Trí</label>
@@ -407,29 +408,29 @@
 
         <script>
 
-            document.addEventListener('contextmenu', function (e) {
-                e.preventDefault();
-            }, false);
+            // document.addEventListener('contextmenu', function (e) {
+            //     e.preventDefault();
+            // }, false);
 
-            // Disable shortcuts
-            document.onkeydown = function (e) {
-                // Disable F12
-                if (e.keyCode == 123) {
-                    return false;
-                }
-                // Disable Ctrl+Shift+I
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-                    return false;
-                }
-                // Disable Ctrl+Shift+J
-                if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
-                    return false;
-                }
-                // Disable Ctrl+U
-                if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
-                    return false;
-                }
-            };
+            // // Disable shortcuts
+            // document.onkeydown = function (e) {
+            //     // Disable F12
+            //     if (e.keyCode == 123) {
+            //         return false;
+            //     }
+            //     // Disable Ctrl+Shift+I
+            //     if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+            //         return false;
+            //     }
+            //     // Disable Ctrl+Shift+J
+            //     if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+            //         return false;
+            //     }
+            //     // Disable Ctrl+U
+            //     if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+            //         return false;
+            //     }
+            // };
 
 
             // Thêm các hàm quản lý hiệu ứng
@@ -528,9 +529,10 @@
                         "Số HĐ": item.soHD,
                         "Số PO#": item.soPO,
                         TRANG_THAI: item.trangThai,
-                        SO_PHIEU: currentSoPhieu,  // Sử dụng SO_PHIEU đã lưu
+                        SO_PHIEU: currentSoPhieu,
                         MA_HANG: item.maHang,
-                        SO_LUONG: item.soLuong,
+                        // Quan trọng: Chuyển số về string và giữ nguyên định dạng thập phân
+                        SO_LUONG: item.soLuong.toString().replace('.', ','), // Chuyển dấu . thành dấu , cho phù hợp với định dạng VN
                         NSX: item.nsx,
                         HSD: item.hsd,
                         SO_LOT: item.soLot,
@@ -538,27 +540,24 @@
                         GHI_CHU: item.ghiChu,
                         VI_TRI: item.viTri,
                         DON_GIA: item.donGia,
-                        THANH_TIEN: item.donGia * item.soLuong,
+                        // Chuyển đổi thành tiền cũng cần xử lý tương tự
+                        THANH_TIEN: (item.donGia * item.soLuong).toString().replace('.', ','),
                         KHO: "Kho Quất Động",
                         NHOM_HANG: item.nhomHang
                     }));
-
-                    const detailResponse = await apiRequest('NhapKho_CT', 'Add', {
-                        Rows: detailRecords
-                    });
-                    console.log('Kết quả lưu NhapKho_CT:', detailResponse);
-
                     // Tính tổng số lượng và tổng tiền
                     const tongSoLuong = temporaryData.reduce((sum, item) => sum + Number(item.soLuong), 0);
                     const tongTien = temporaryData.reduce((sum, item) => sum + (Number(item.donGia) * Number(item.soLuong)), 0);
                     const uniqueNhomHang = [...new Set(temporaryData.map(item => item.nhomHang))].join(', ');
+
+                    // Xác định trạng thái tổng thể
                     const trangThai = temporaryData.every(item => item.trangThai === 'Hoàn thành') ? 'Hoàn thành' : 'Tạo mới';
 
-                    // Chuẩn bị dữ liệu cho bảng NhapKho với đầy đủ các trường
+                    // Chuẩn bị dữ liệu tổng hợp cho bảng NhapKho
                     const summaryData = {
                         Rows: [{
                             TRANG_THAI: trangThai,
-                            SO_PHIEU: currentSoPhieu,  // Sử dụng SO_PHIEU đã lưu
+                            SO_PHIEU: currentSoPhieu,
                             NGAY_THANG: document.getElementById('ngayThang').value,
                             TEN_NCC: document.getElementById('tenNCC').value,
                             DIA_CHI: diaChiNCC,
@@ -566,30 +565,31 @@
                             SO_HD: document.getElementById('soHD').value,
                             "SO_PO#": document.getElementById('soPO').value,
                             GHI_CHU: document.getElementById('ghiChu').value,
-                            SO_LUONG: tongSoLuong,
-                            "TONG TIEN": tongTien
+                            // Chuyển đổi số thập phân sang chuỗi với dấu phẩy
+                            SO_LUONG: tongSoLuong.toString().replace('.', ','),
+                            "TONG TIEN": tongTien.toString().replace('.', ',')
                         }]
                     };
 
-                    console.log('Dữ liệu gửi đến NhapKho:', summaryData);
+                    // Gửi dữ liệu chi tiết
+                    const detailResponse = await apiRequest('NhapKho_CT', 'Add', {
+                        Rows: detailRecords
+                    });
 
-                    // Lưu vào NhapKho
+                    // Gửi dữ liệu tổng hợp
                     const summaryResponse = await apiRequest('NhapKho', 'Add', summaryData);
-                    console.log('Kết quả lưu NhapKho:', summaryResponse);
 
-                    // Xóa dữ liệu tạm và reset form
+                    // Xử lý sau khi lưu thành công
                     temporaryData.length = 0;
                     document.getElementById('tempTableBody').innerHTML = '';
                     document.getElementById('inventoryForm').reset();
 
-                    // Tạo ID mới
                     const result = await generateNextId();
                     if (result) {
                         document.getElementById('id').value = result.id;
                         document.getElementById('soLot').value = result.soLot;
                     }
 
-                    // Set ngày hiện tại
                     const today = new Date().toISOString().split('T')[0];
                     document.getElementById('ngayThang').value = today;
 
@@ -623,7 +623,8 @@
             <td class="px-2 py-4 text-center">${item.maHang}</td>
             <td class="px-2 py-4 text-center">${item.tenHang}</td>
             <td class="px-2 py-4 text-center">
-                <input type="number" value="${item.soLuong}" 
+                <input type="text" 
+                    value="${item.soLuong.toString().replace('.', ',')}"
                     class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500 font-bold text-blue-600"
                     onchange="updateField(${index}, 'soLuong', this.value)">
             </td>
@@ -667,9 +668,13 @@
 
             // Add function to update field values
             function updateField(index, field, value) {
-                temporaryData[index][field] = field === 'soLuong' ? parseInt(value) : value;
+                if (field === 'soLuong') {
+                    // Chuyển đổi giá trị nhập vào thành số, sau đó giữ 2 chữ số thập phân
+                    temporaryData[index][field] = parseFloat(value.replace(',', '.'));
+                } else {
+                    temporaryData[index][field] = value;
+                }
 
-                // Auto update status based on location
                 if (field === 'viTri') {
                     temporaryData[index].trangThai = value.trim() ? 'Hoàn thành' : 'Tạo mới';
                 }
@@ -713,17 +718,11 @@
 
                 // Validation
                 const maHang = document.getElementById('maHang').value;
-                const soLuong = document.getElementById('soLuong').value;
-                const tenHang = document.getElementById('tenHang').value;
+                // Chuyển đổi số thập phân đúng cách
+                const soLuong = parseFloat(document.getElementById('soLuong').value || '0');
 
                 if (!maHang.trim()) {
                     alert('Vui lòng nhập mã hàng');
-                    document.getElementById('maHang').focus();
-                    return;
-                }
-
-                if (!tenHang.trim()) {
-                    alert('Mã hàng không tồn tại trong hệ thống');
                     document.getElementById('maHang').focus();
                     return;
                 }
@@ -747,9 +746,8 @@
 
                     const product = response.find(item => item.MA_HANG === maHang);
                     if (product) {
-                        const palletQuantity = parseInt(product['So luong/1 Pallet']);
+                        const palletQuantity = parseFloat(product['So luong/1 Pallet']);
 
-                        // Check for invalid pallet quantity
                         if (!palletQuantity || palletQuantity <= 0) {
                             alert(`Mã hàng ${maHang} chưa có thông tin Số lượng/1 Pallet. Vui lòng cập nhật thông tin trước khi nhập kho.`);
                             return;
@@ -761,8 +759,9 @@
                             soHD: document.getElementById('soHD').value,
                             soPO: document.getElementById('soPO').value,
                             maHang: maHang,
-                            tenHang: tenHang,
-                            soLuong: parseInt(soLuong),
+                            tenHang: document.getElementById('tenHang').value,
+                            // Đảm bảo số thập phân được giữ nguyên
+                            soLuong: parseFloat(soLuong.toFixed(2)),
                             nsx: document.getElementById('nsx').value,
                             hsd: document.getElementById('hsd').value,
                             soLot: document.getElementById('soLot').value,
@@ -775,15 +774,18 @@
                         const donGia = parseFloat(product['Đơn Giá']) || 0;
                         const nhomHang = product['Nhóm Hàng'] || '';
 
-                        // Split into multiple entries based on pallet quantity
+                        // Tính toán số lượng cho mỗi pallet
                         const totalEntries = Math.ceil(formData.soLuong / palletQuantity);
-                        const remainingQuantity = formData.soLuong % palletQuantity;
+                        let remainingQuantity = formData.soLuong;
 
                         for (let i = 0; i < totalEntries; i++) {
-                            const currentQuantity = i === totalEntries - 1 && remainingQuantity ? remainingQuantity : palletQuantity;
+                            const currentQuantity = Math.min(remainingQuantity, palletQuantity);
+                            remainingQuantity -= currentQuantity;
+
+                            // Đảm bảo số thập phân được giữ nguyên khi lưu vào temporaryData
                             const entryData = {
                                 ...formData,
-                                soLuong: currentQuantity,
+                                soLuong: parseFloat(currentQuantity.toFixed(2)),
                                 soLot: `${formData.soLot}_P${i + 1}`,
                                 donGia: donGia,
                                 nhomHang: nhomHang
@@ -797,26 +799,14 @@
                         // Reset form fields
                         document.getElementById('maHang').value = '';
                         document.getElementById('tenHang').value = '';
-                        // document.getElementById('soLuong').value = '';
-                        // document.getElementById('viTri').value = '';
-                        // document.getElementById('ghiChu').value = '';
-                        // document.getElementById('maNCC').value = '';
-                        // document.getElementById('tenNCC').value = '';
-                        // document.getElementById('soHD').value = '';
-                        // document.getElementById('soPO').value = '';
-                        // document.getElementById('ngayThang').value = new Date().toISOString().split('T')[0];
-                        document.getElementById('hsd').value = '';
-                        document.getElementById('nsx').value = '';
-
-                    } else {
-                        throw new Error('Không tìm thấy sản phẩm với mã hàng này');
+                        document.getElementById('soLuong').value = '';
+                        document.getElementById('maHang').focus();
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
                     alert(error.message);
                 }
             });
-
             function resetForm() {
                 document.getElementById('maHang').value = '';
                 document.getElementById('tenHang').value = '';
