@@ -121,6 +121,38 @@
 </style>
 
 <body class="bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+    <!-- Thêm vào đầu thẻ body -->
+    <script>
+        // Kiểm tra đăng nhập
+        function checkAuth() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            if (!isLoggedIn) {
+                window.location.href = 'clould_login.html';
+            }
+        }
+
+        // Kiểm tra khi trang load
+        document.addEventListener('DOMContentLoaded', checkAuth);
+
+        // Thêm nút đăng xuất vào header
+        window.addEventListener('load', function () {
+            const header = document.querySelector('.flex.justify-between.items-center.mb-3');
+            if (header) {
+                const logoutButton = document.createElement('button');
+                logoutButton.className = 'bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded font-medium text-sm ml-2';
+                logoutButton.innerHTML = '⟲ Đăng xuất';
+                logoutButton.onclick = function () {
+                    sessionStorage.removeItem('isLoggedIn');
+                    sessionStorage.removeItem('userData');
+                    window.location.href = 'clould_login.html';
+                };
+
+                // Thêm vào div chứa các nút
+                const buttonContainer = header.querySelector('.flex.gap-2');
+                buttonContainer.appendChild(logoutButton);
+            }
+        });
+    </script>
     <div class="max-w-8xl mx-auto">
         <form id="inventoryForm" class="bg-white rounded-lg shadow-md p-4 mb-4 animate__animated animate__fadeIn">
             <div class="flex justify-between items-center mb-3">
@@ -408,29 +440,29 @@
 
         <script>
 
-            // document.addEventListener('contextmenu', function (e) {
-            //     e.preventDefault();
-            // }, false);
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            }, false);
 
-            // // Disable shortcuts
-            // document.onkeydown = function (e) {
-            //     // Disable F12
-            //     if (e.keyCode == 123) {
-            //         return false;
-            //     }
-            //     // Disable Ctrl+Shift+I
-            //     if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-            //         return false;
-            //     }
-            //     // Disable Ctrl+Shift+J
-            //     if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
-            //         return false;
-            //     }
-            //     // Disable Ctrl+U
-            //     if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
-            //         return false;
-            //     }
-            // };
+            // Disable shortcuts
+            document.onkeydown = function (e) {
+                // Disable F12
+                if (e.keyCode == 123) {
+                    return false;
+                }
+                // Disable Ctrl+Shift+I
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                    return false;
+                }
+                // Disable Ctrl+Shift+J
+                if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                    return false;
+                }
+                // Disable Ctrl+U
+                if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                    return false;
+                }
+            };
 
 
             // Thêm các hàm quản lý hiệu ứng
@@ -567,7 +599,8 @@
                             GHI_CHU: document.getElementById('ghiChu').value,
                             // Chuyển đổi số thập phân sang chuỗi với dấu phẩy
                             SO_LUONG: tongSoLuong.toString().replace('.', ','),
-                            "TONG TIEN": tongTien.toString().replace('.', ',')
+                            "TONG TIEN": tongTien.toString().replace('.', ','),
+                            NGUOI_TAO: currentUser // Thêm trường người tạo
                         }]
                     };
 
@@ -1004,6 +1037,22 @@
                 }
             }
 
+            let currentUser = '';
+
+            // Thêm vào đầu file script hoặc trong DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', function () {
+                // Lấy thông tin user từ sessionStorage
+                const userData = sessionStorage.getItem('userData');
+                if (userData) {
+                    try {
+                        const userObj = JSON.parse(userData);
+                        currentUser = userObj.TEN_NV || 'Unknown'; // Lấy tên nhân viên
+                    } catch (e) {
+                        console.error('Error parsing user data:', e);
+                        currentUser = 'Unknown';
+                    }
+                }
+            });
 
             // Thiết lập giá trị mặc định cho trường Ngày Tháng
             document.addEventListener('DOMContentLoaded', async function () {
